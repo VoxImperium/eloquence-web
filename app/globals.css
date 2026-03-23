@@ -1,0 +1,281 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Raleway:wght@200;300;400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink:     #0a0a0f;
+  --ink2:    #12111a;
+  --ivory:   #f5f0e8;
+  --cream:   #ede8dc;
+  --gold:    #c9a84c;
+  --gold2:   #e8c870;
+  --gold3:   #a88830;
+  --muted:   #6a6258;
+  --muted2:  #8a8070;
+  --border:  rgba(201,168,76,0.2);
+  --border2: rgba(201,168,76,0.35);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; color-scheme:dark; }
+
+body {
+  background: var(--ink);
+  color: var(--ivory);
+  font-family: 'Raleway', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--gold3); }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+::selection { background: rgba(201,168,76,0.3); color: var(--ivory); }
+
+/* Typographie */
+.font-display { font-family: 'Cormorant Garamond', serif; }
+.font-serif   { font-family: 'Libre Baskerville', serif; }
+.font-sans    { font-family: 'Raleway', sans-serif; }
+
+/* Ornements */
+.ornament {
+  font-family: 'Cormorant Garamond', serif;
+  color: rgba(201,168,76,0.35);
+  letter-spacing: 0.4em;
+  font-size: 14px;
+}
+
+/* Gold text */
+.text-gold { color: var(--gold); }
+.text-gold-italic { color: var(--gold); font-style: italic; font-family: 'Cormorant Garamond', serif; }
+
+/* Ligne décorative */
+.rule-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border: none;
+  margin: 0;
+}
+
+/* Eyebrow */
+.eyebrow {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.eyebrow::before {
+  content: '';
+  width: 28px; height: 1px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+/* Boutons */
+.btn-gold {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--gold);
+  padding: 16px 40px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+.btn-gold::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--gold2);
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.btn-gold:hover::after { transform: translateX(0); }
+.btn-gold span, .btn-gold .btn-text { position: relative; z-index: 1; }
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,0.2); }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-gold:disabled:hover { transform: none; box-shadow: none; }
+
+.btn-outline {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: transparent;
+  padding: 16px 40px;
+  border: 1px solid rgba(201,168,76,0.35);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.btn-outline:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+
+.btn-ghost {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  background: transparent;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s;
+  text-decoration: none;
+}
+.btn-ghost:hover { color: var(--ivory); }
+
+/* Spinner élégant */
+.spinner-gold {
+  width: 16px; height: 16px;
+  border: 1.5px solid rgba(10,10,15,0.25);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+.spinner-outline {
+  width: 16px; height: 16px;
+  border: 1.5px solid rgba(201,168,76,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.spinner-ivory {
+  width: 16px; height: 16px;
+  border: 1.5px solid rgba(245,240,232,0.2);
+  border-top-color: var(--ivory);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Barre de progression */
+.progress-sweep {
+  height: 1px;
+  background: rgba(201,168,76,0.12);
+  position: relative;
+  overflow: hidden;
+}
+.progress-sweep::after {
+  content: '';
+  position: absolute; left: -100%; top: 0; bottom: 0; width: 100%;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  animation: sweep 1.6s ease-in-out infinite;
+}
+@keyframes sweep { 0% { left:-100%; } 100% { left:100%; } }
+
+/* Card de base */
+.card-oratoire {
+  border: 1px solid var(--border);
+  background: rgba(18,17,26,0.6);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.4s;
+}
+.card-oratoire:hover { border-color: var(--border2); }
+
+/* Input */
+.input-oratoire {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+  padding: 12px 0;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ivory);
+  outline: none;
+  transition: border-color 0.3s;
+  letter-spacing: 0.02em;
+}
+.input-oratoire:focus { border-bottom-color: var(--gold); }
+.input-oratoire::placeholder { color: var(--muted); font-size: 13px; }
+
+.input-box {
+  width: 100%;
+  background: rgba(18,17,26,0.8);
+  border: 1px solid var(--border);
+  padding: 14px 18px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ivory);
+  outline: none;
+  transition: border-color 0.3s;
+  resize: vertical;
+}
+.input-box:focus { border-color: rgba(201,168,76,0.5); }
+.input-box::placeholder { color: var(--muted); }
+
+/* Label */
+.label-oratoire {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* Score */
+.score-bar {
+  height: 1px;
+  background: rgba(201,168,76,0.12);
+}
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold3), var(--gold2));
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes floatA {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-12px); }
+}
+@keyframes floatB {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes floatC {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-16px); }
+}
+@keyframes waveOrateur {
+  0%,100% { opacity:0.2; }
+  50%      { opacity:0.6; }
+}
+@keyframes pulseStep {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.4; transform:scale(0.6); }
+}
+
+.animate-fade-up { animation: fadeUp 0.7s ease forwards; }
