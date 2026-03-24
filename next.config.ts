@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/backend/:path*",
-        destination: "https://eloquence-api.up.railway.app/:path*",
+        destination: "https://eloquence-api-production.up.railway.app/:path*",
       },
     ];
   },
