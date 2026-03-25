@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const response = await fetch("http://localhost:8000/simulate/scenarios")
+    const response = await fetch("https://eloquence-api-production.up.railway.app/simulate/scenarios")
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {

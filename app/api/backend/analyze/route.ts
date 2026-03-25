@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
 
-    const response = await fetch("http://localhost:8000/analyze/", {
+    const response = await fetch("https://eloquence-api-production.up.railway.app/analyze/", {
       method: "POST",
       body: formData,
     })
