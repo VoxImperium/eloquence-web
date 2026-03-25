@@ -13,6 +13,7 @@ const QUOTES = [
 function LoginForm() {
   const [email,    setEmail]    = useState("")
   const [password, setPassword] = useState("")
+  const [phone,    setPhone]    = useState("")
   const [mode,     setMode]     = useState("login")
   const [error,    setError]    = useState("")
   const [loading,  setLoading]  = useState(false)
@@ -50,7 +51,8 @@ function LoginForm() {
           body: JSON.stringify({
             email: data.user?.email || "",
             prenom: data.user?.user_metadata?.full_name || "",
-            plan: "free"
+            plan: "free",
+            phone: phone || undefined,
           })
         }).catch(() => {})
         router.push(safeRedirect)
@@ -123,6 +125,18 @@ function LoginForm() {
               className="input-oratoire" placeholder="••••••••••"
               onKeyDown={e => e.key === "Enter" && handleSubmit()}/>
           </div>
+
+          {mode === "signup" && (
+            <div style={{marginBottom:36}}>
+              <label className="label-oratoire">
+                Téléphone <span style={{color:"#6a6258", fontSize:11, fontWeight:400}}>
+                  (optionnel)
+                </span>
+              </label>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                className="input-oratoire" placeholder="+33 6 00 00 00 00"/>
+            </div>
+          )}
 
           {error && (
             <div style={{padding:"12px 16px", border:"1px solid rgba(255,100,100,0.2)", background:"rgba(255,100,100,0.05)", marginBottom:24}}>
