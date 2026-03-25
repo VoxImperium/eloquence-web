@@ -180,6 +180,7 @@ export default function TrainingPage() {
       </div>
       <div style={{display:"flex",gap:16}}>
         <button onClick={()=>{setStep("select");setMessages([]);setDebrief(null);setSelected(null)}} className="btn-outline" style={{flex:1,justifyContent:"center"}}><span>Nouveau sujet</span></button>
+        <Link href="/legifrance" className="btn-outline" style={{flex:1,justifyContent:"center"}}><span>Plaider un cas</span></Link>
         <Link href="/speech-analysis" className="btn-gold" style={{flex:1,justifyContent:"center"}}><span className="btn-text">Analyser un discours</span></Link>
       </div>
     </main>

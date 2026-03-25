@@ -104,7 +104,7 @@ export default function LegifrangePage() {
       <div style={{marginBottom:48}}>
         <Link href="/" style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"#6a6258",textDecoration:"none"}}>← Retour</Link>
         <div style={{marginTop:20,marginBottom:16}}>
-          <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.3em",textTransform:"uppercase",color:"#c9a84c"}}>Légifrance × Thémis</span>
+          <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.3em",textTransform:"uppercase",color:"#c9a84c"}}>Plaidoirie juridique</span>
         </div>
         <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(36px,5vw,56px)",fontWeight:300,lineHeight:1.1}}>
           Résolution de <em style={{color:"#c9a84c"}}>cas pratiques</em>

@@ -100,6 +100,9 @@ export default function RecordPage() {
 
         <div style={{marginBottom:48}}>
           <Link href="/" className="btn-ghost" style={{padding:"0 0 20px 0", display:"block"}}>← Retour</Link>
+        <Link href="/legifrance" style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"rgba(201,168,76,0.6)",textDecoration:"none",marginLeft:24}}>
+          Plaider un cas →
+        </Link>
           <div className="eyebrow" style={{marginBottom:16}}>Analyse vocale</div>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(36px,5vw,52px)", fontWeight:300, lineHeight:1.1, marginBottom:12}}>
             Votre discours,<br/><em style={{color:"#c9a84c"}}>analysé</em>

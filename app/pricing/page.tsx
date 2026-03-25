@@ -72,7 +72,8 @@ export default function PricingPage() {
           <p style={{fontSize:11, color:"#6a6258", marginBottom:36, letterSpacing:"0.1em"}}>par mois · sans engagement</p>
           <div style={{height:1, background:"rgba(201,168,76,0.2)", marginBottom:32}}/>
           <ul style={{listStyle:"none", display:"flex", flexDirection:"column", gap:14, marginBottom:36}}>
-            {["Analyses vocales illimitées","Feedback IA complet avec scores /10","Conseil prioritaire personnalisé","Historique de toutes vos sessions","5 scénarios de simulation d'élite","500 sujets d'entraînement socratique","Analyse & réécriture de discours complète","Support prioritaire"].map(f => (
+            {["Analyses vocales illimitées","Feedback IA complet avec scores /10","Conseil prioritaire personnalisé","Historique de toutes vos sessions","5 scénarios de simulation d'élite","500 sujets d'entraînement socratique","Analyse & réécriture de discours complète",
+              "Plaidoirie juridique — Légifrance × Thémis","Support prioritaire"].map(f => (
               <li key={f} style={{fontSize:12, color:"#ede8dc", display:"flex", gap:12, alignItems:"flex-start"}}>
                 <span style={{color:"#c9a84c", flexShrink:0}}>◆</span>{f}
               </li>

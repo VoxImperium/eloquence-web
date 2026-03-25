@@ -225,6 +225,7 @@ export default function SimulatePage() {
       </div>
       <div style={{display:"flex", gap:16}}>
         <button onClick={()=>{setStep("select");setMessages([]);setDebrief(null);setScenario(null)}} className="btn-outline" style={{flex:1, justifyContent:"center"}}><span>Nouvelle simulation</span></button>
+        <Link href="/legifrance" className="btn-outline" style={{flex:1,justifyContent:"center"}}><span>Plaider un cas</span></Link>
         <Link href="/record" className="btn-gold" style={{flex:1, justifyContent:"center"}}><span className="btn-text">Analyser un discours</span></Link>
       </div>
     </main>

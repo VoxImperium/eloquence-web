@@ -149,6 +149,16 @@ export default function HomePage() {
               style={{
                 padding:"40px 28px",
                 borderRight: i < 3 ? "1px solid rgba(201,168,76,0.2)" : "none",
+              <Link href="/legifrance" style={{
+                border:"1px solid rgba(201,168,76,0.15)",
+                padding:"28px",textDecoration:"none",color:"inherit",display:"block",
+                transition:"all 0.3s",
+              }}
+              onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.4)"}}
+              onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.15)"}}>
+                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:400,marginBottom:8,color:"#f5f0e8"}}>Plaidoirie juridique</p>
+                <p style={{fontSize:11,color:"#6a6258",lineHeight:1.7}}>Résolution de cas pratiques — Légifrance × Thémis</p>
+              </Link>
                 textDecoration:"none", color:"inherit",
                 position:"relative", overflow:"hidden",
                 transition:"background 0.4s",

@@ -116,6 +116,9 @@ export default function SpeechAnalysisPage() {
       {/* Header */}
       <div style={{marginBottom: 48}}>
         <Link href="/" style={{fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#6a6258", textDecoration: "none"}}>← Retour</Link>
+        <Link href="/legifrance" style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"rgba(201,168,76,0.6)",textDecoration:"none",marginLeft:24}}>
+          Cas pratique →
+        </Link>
         <div style={{marginTop: 20, marginBottom: 16}}>
           <span style={{fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: "#c9a84c"}}>L&apos;Éloquence de Thémis</span>
         </div>
