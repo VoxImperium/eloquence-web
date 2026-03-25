@@ -1,5 +1,8 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase"
+import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const CATS = ["Philosophie","Société & Politique","Technologie & IA","Environnement & Écologie","Éducation & Culture","Économie & Travail","Éthique & Bioéthique","Justice & Droit","Relations internationales","Identité & Société","Psychologie & Bien-être"]
@@ -16,13 +19,29 @@ export default function TrainingPage() {
   const [loading,   setLoading]   = useState(false)
   const [debrief,   setDebrief]   = useState<any>(null)
   const [recording, setRecording] = useState(false)
+  const [userId,    setUserId]    = useState<string|null>(null)
+  const [plan,      setPlan]      = useState<string|null>(null)
+  const [used,      setUsed]      = useState(0)
   const mrRef = useRef<any>(null); const chunksRef = useRef<any[]>([]); const endRef = useRef<any>(null)
+  const router   = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push("/login?redirect=/training"); return }
+      setUserId(user.id)
+      setUsed(getUsage(user.id, "training"))
+      supabase.from("profiles").select("plan").eq("id", user.id).single()
+        .then(({ data }) => setPlan(data?.plan ?? null))
+    })
+  }, [])
 
   useEffect(() => { fetch("/api/backend/training/topics").then(r=>r.json()).then(d=>{setTopics(d.topics||[]);setFiltered(d.topics||[])}) }, [])
   useEffect(() => { let f=topics; if(category!=="Tous") f=f.filter((t:any)=>t.category===category); if(search) f=f.filter((t:any)=>t.topic.toLowerCase().includes(search.toLowerCase())); setFiltered(f) }, [category,search,topics])
   useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}) }, [messages])
 
   const start = async (t: any) => {
+    if (userId) { incrementUsage(userId, "training"); setUsed(u => u + 1) }
     setSelected(t); setStep("chat"); setLoading(true)
     const res = await fetch("/api/backend/training/message", {
       method:"POST", headers:{"Content-Type":"application/json"},
@@ -74,45 +93,84 @@ export default function TrainingPage() {
   const stopVoice = () => { mrRef.current?.stop(); mrRef.current?.stream.getTracks().forEach((t:any)=>t.stop()); setRecording(false) }
   const random = async () => { const r = await fetch("/api/backend/training/random"); start(await r.json()) }
 
+  const limits   = getPlanLimits(plan)
+  const trLimit  = limits.training
+  const quotaMax = trLimit === Infinity ? null : trLimit
+  const blocked  = quotaMax !== null && used >= quotaMax
+
   if (step==="select") return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:880, margin:"0 auto"}}>
       <div style={{display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:48}}>
         <div>
-          <div className="eyebrow" style={{marginBottom:16}}>Entraînement socratique</div>
+          <div style={{display:"flex", alignItems:"center", gap:16, marginBottom:16}}>
+            <div className="eyebrow" style={{marginBottom:0}}>Entraînement socratique</div>
+            {quotaMax !== null && (
+              <span style={{
+                fontSize:10, letterSpacing:"0.1em", color: blocked ? "#c97a4c" : "#6a6258",
+                border:`1px solid ${blocked ? "rgba(201,120,76,0.3)" : "rgba(201,168,76,0.15)"}`,
+                padding:"3px 10px",
+              }}>
+                {used} / {quotaMax} sujets ce mois
+              </span>
+            )}
+          </div>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(36px,5vw,56px)", fontWeight:300, lineHeight:1.1}}>
             {topics.length} sujets<br/><em style={{color:"#c9a84c"}}>d&apos;excellence</em>
           </h1>
         </div>
-        <button onClick={random} className="btn-outline" style={{flexShrink:0, marginTop:8}}><span>Sujet aléatoire</span></button>
+        <button onClick={random} disabled={blocked} className="btn-outline" style={{flexShrink:0, marginTop:8}}><span>Sujet aléatoire</span></button>
       </div>
       <div style={{height:1, background:"linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)", marginBottom:36}}/>
-      <div style={{display:"flex", gap:8, flexWrap:"wrap", marginBottom:16}}>
-        {["Tous",...CATS].map(c=>(
-          <button key={c} onClick={()=>setCategory(c)} style={{
-            fontFamily:"'Raleway',sans-serif", fontSize:9, letterSpacing:"0.2em", textTransform:"uppercase",
-            padding:"6px 14px", border:`1px solid ${category===c?"rgba(201,168,76,0.5)":"rgba(201,168,76,0.12)"}`,
-            background:category===c?"rgba(201,168,76,0.06)":"transparent", cursor:"pointer",
-            color:category===c?"#c9a84c":"#6a6258", transition:"all 0.3s",
-          }}>{c}</button>
-        ))}
-      </div>
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un sujet..."
-        className="input-box" style={{marginBottom:20}}/>
-      <div style={{maxHeight:"55vh", overflowY:"auto", display:"flex", flexDirection:"column", gap:2}}>
-        {filtered.map((t,i) => (
-          <button key={i} onClick={()=>start(t)} style={{
-            textAlign:"left", padding:"16px 20px",
-            border:"1px solid rgba(201,168,76,0.1)",
-            background:"transparent", cursor:"pointer",
-            transition:"all 0.3s",
-          }}
-          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.35)";(e.currentTarget as HTMLElement).style.background="rgba(201,168,76,0.02)"}}
-          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.1)";(e.currentTarget as HTMLElement).style.background="transparent"}}>
-            <p style={{fontSize:9, letterSpacing:"0.15em", textTransform:"uppercase", color:"#6a6258", marginBottom:4}}>{t.category}</p>
-            <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:16, color:"#f5f0e8"}}>{t.topic}</p>
-          </button>
-        ))}
-      </div>
+      {blocked ? (
+        <div style={{
+          background:"rgba(10,10,15,0.95)", backdropFilter:"blur(12px)",
+          border:"1px solid rgba(201,168,76,0.3)",
+          padding:"48px 36px",
+          textAlign:"center",
+        }}>
+          <p className="ornament" style={{marginBottom:12}}>✦</p>
+          <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:"#f5f0e8", marginBottom:8}}>
+            Quota mensuel atteint
+          </p>
+          <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7, marginBottom:20}}>
+            Vous avez utilisé tous vos sujets d&apos;entraînement ce mois-ci.<br/>
+            Passez à un forfait supérieur pour continuer.
+          </p>
+          <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
+            <span className="btn-text">Voir les forfaits →</span>
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div style={{display:"flex", gap:8, flexWrap:"wrap", marginBottom:16}}>
+            {["Tous",...CATS].map(c=>(
+              <button key={c} onClick={()=>setCategory(c)} style={{
+                fontFamily:"'Raleway',sans-serif", fontSize:9, letterSpacing:"0.2em", textTransform:"uppercase",
+                padding:"6px 14px", border:`1px solid ${category===c?"rgba(201,168,76,0.5)":"rgba(201,168,76,0.12)"}`,
+                background:category===c?"rgba(201,168,76,0.06)":"transparent", cursor:"pointer",
+                color:category===c?"#c9a84c":"#6a6258", transition:"all 0.3s",
+              }}>{c}</button>
+            ))}
+          </div>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un sujet..."
+            className="input-box" style={{marginBottom:20}}/>
+          <div style={{maxHeight:"55vh", overflowY:"auto", display:"flex", flexDirection:"column", gap:2}}>
+            {filtered.map((t,i) => (
+              <button key={i} onClick={()=>start(t)} style={{
+                textAlign:"left", padding:"16px 20px",
+                border:"1px solid rgba(201,168,76,0.1)",
+                background:"transparent", cursor:"pointer",
+                transition:"all 0.3s",
+              }}
+              onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.35)";(e.currentTarget as HTMLElement).style.background="rgba(201,168,76,0.02)"}}
+              onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.1)";(e.currentTarget as HTMLElement).style.background="transparent"}}>
+                <p style={{fontSize:9, letterSpacing:"0.15em", textTransform:"uppercase", color:"#6a6258", marginBottom:4}}>{t.category}</p>
+                <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:16, color:"#f5f0e8"}}>{t.topic}</p>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </main>
   )
 

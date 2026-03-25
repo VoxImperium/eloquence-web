@@ -1,5 +1,8 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase"
+import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const CONTEXTS = [
@@ -28,11 +31,31 @@ export default function SpeechAnalysisPage() {
   const [recording, setRecording] = useState(false)
   const [tab,       setTab]       = useState("tirade")
   const [step,      setStep]      = useState(0)
+  const [userId,    setUserId]    = useState<string|null>(null)
+  const [plan,      setPlan]      = useState<string|null>(null)
+  const [used,      setUsed]      = useState(0)
   const mrRef = useRef<any>(null)
   const chunksRef = useRef<any[]>([])
+  const router   = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push("/login?redirect=/speech-analysis"); return }
+      setUserId(user.id)
+      setUsed(getUsage(user.id, "discourse"))
+      supabase.from("profiles").select("plan").eq("id", user.id).single()
+        .then(({ data }) => setPlan(data?.plan ?? null))
+    })
+  }, [])
 
   const scoreColor = (n: number) => n >= 7 ? "#c9a84c" : n >= 5 ? "#8a8070" : "#6a5a50"
   const A = result?.analyse_globale
+
+  const limits   = getPlanLimits(plan)
+  const disLimit = limits.discourse
+  const quotaMax = disLimit === Infinity ? null : disLimit
+  const blocked  = quotaMax !== null && used >= quotaMax
 
   const analyze = async () => {
     setLoading(true); setResult(null); setStep(0)
@@ -44,6 +67,7 @@ export default function SpeechAnalysisPage() {
         body: JSON.stringify({text, context}),
       })
       const data = await res.json()
+      if (userId) { incrementUsage(userId, "discourse"); setUsed(u => u + 1) }
       setResult(data); setTab("tirade")
     } catch { alert("Erreur lors de l'analyse") }
     clearInterval(iv); setLoading(false)
@@ -64,6 +88,7 @@ export default function SpeechAnalysisPage() {
         const res = await fetch("/api/backend/speech/analyze-audio", {method: "POST", body: form})
         const data = await res.json()
         if (data.transcript) setText(data.transcript)
+        if (userId) { incrementUsage(userId, "discourse"); setUsed(u => u + 1) }
         setResult(data); setTab("tirade"); setLoading(false)
       }
       mr.start(); mrRef.current = mr; setRecording(true)
@@ -119,8 +144,17 @@ export default function SpeechAnalysisPage() {
         <Link href="/legifrance" style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"rgba(201,168,76,0.6)",textDecoration:"none",marginLeft:24}}>
           Cas pratique →
         </Link>
-        <div style={{marginTop: 20, marginBottom: 16}}>
+        <div style={{marginTop: 20, marginBottom: 16, display:"flex", alignItems:"center", justifyContent:"space-between"}}>
           <span style={{fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: "#c9a84c"}}>L&apos;Éloquence de Thémis</span>
+          {quotaMax !== null && (
+            <span style={{
+              fontSize:10, letterSpacing:"0.1em", color: blocked ? "#c97a4c" : "#6a6258",
+              border:`1px solid ${blocked ? "rgba(201,120,76,0.3)" : "rgba(201,168,76,0.15)"}`,
+              padding:"3px 10px",
+            }}>
+              {used} / {quotaMax} analyses ce mois
+            </span>
+          )}
         </div>
         <h1 style={{fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(36px,5vw,56px)", fontWeight: 300, lineHeight: 1.1}}>
           Scansion <em style={{color: "#c9a84c"}}>juridique</em>
@@ -164,12 +198,32 @@ export default function SpeechAnalysisPage() {
           <textarea value={text} onChange={e => setText(e.target.value)}
             placeholder="Collez votre plaidoirie, arrêt de la Cour de cassation, article de code, conclusions d'avocat, ou tout discours à transformer..."
             className="input-box" rows={10} style={{marginBottom: 16}}/>
-          <button onClick={analyze} disabled={!text.trim() || loading} className="btn-gold" style={{width: "100%", justifyContent: "center"}}>
-            {loading
-              ? <><span className="spinner-gold"/><span className="btn-text">Thémis analyse...</span></>
-              : <span className="btn-text">Confier à Thémis →</span>
-            }
-          </button>
+          {blocked ? (
+            <div style={{
+              background:"rgba(10,10,15,0.95)", backdropFilter:"blur(12px)",
+              border:"1px solid rgba(201,168,76,0.3)",
+              padding:"24px 28px",
+              textAlign:"center",
+            }}>
+              <p className="ornament" style={{marginBottom:8}}>✦</p>
+              <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:18, color:"#f5f0e8", marginBottom:6}}>
+                Quota mensuel atteint
+              </p>
+              <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7, marginBottom:16}}>
+                Passez à un forfait supérieur pour continuer vos analyses.
+              </p>
+              <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
+                <span className="btn-text">Voir les forfaits →</span>
+              </Link>
+            </div>
+          ) : (
+            <button onClick={analyze} disabled={!text.trim() || loading} className="btn-gold" style={{width: "100%", justifyContent: "center"}}>
+              {loading
+                ? <><span className="spinner-gold"/><span className="btn-text">Thémis analyse...</span></>
+                : <span className="btn-text">Confier à Thémis →</span>
+              }
+            </button>
+          )}
         </div>
       )}
 
