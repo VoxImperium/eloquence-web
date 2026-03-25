@@ -29,18 +29,16 @@ export default function LoginPage() {
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password })
         if (error) throw error
-        // Fire-and-forget welcome email — MUST NOT block or error the signup
-        setTimeout(() => {
-          fetch("/api/welcome-email", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: data.user?.email ?? "",
-              prenom: data.user?.user_metadata?.full_name ?? "",
-              plan: "free"
-            })
-          }).catch(() => {})
-        }, 0)
+        // Email de bienvenue — fire-and-forget, ne bloque pas la navigation
+        fetch("/api/backend/emails/welcome", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            email: data.user?.email || "",
+            prenom: data.user?.user_metadata?.full_name || "",
+            plan: "free"
+          })
+        }).catch(() => {})
         router.push("/dashboard")
       }
     } catch (e: any) { setError(e.message) }
@@ -77,15 +75,13 @@ export default function LoginPage() {
 
           <p className="ornament" style={{marginBottom:24}}>✦</p>
 
-          <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300, marginBottom:8}}>
-            {mode === "login" ? "Bon retour" : "Rejoignez-nous"}
-          </h1>
-          <p style={{fontSize:12, color:"#6a6258", marginBottom:40, letterSpacing:"0.04em"}}>
-            {mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"} {" "}
+          <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300, marginBottom:8}}
+            >{mode === "login" ? "Bon retour" : "Rejoignez-nous"}</h1>
+          <p style={{fontSize:12, color:"#6a6258", marginBottom:40, letterSpacing:"0.04em"}}
+            >{mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"} {" "}
             <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              style={{color:"#c9a84c", background:"none", border:"none", cursor:"pointer", fontSize:12, fontFamily:"'Raleway',sans-serif", letterSpacing:"0.04em", textDecoration:"underline"}}>
-              {mode === "login" ? "Créer un compte" : "Se connecter"}
-            </button>
+              style={{color:"#c9a84c", background:"none", border:"none", cursor:"pointer", fontSize:12, fontFamily:"'Raleway',sans-serif", letterSpacing:"0.04em", textDecoration:"underline"}}
+              >{mode === "login" ? "Créer un compte" : "Se connecter"}</button>
           </p>
 
           <div style={{marginBottom:28}}>
@@ -102,14 +98,14 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div style={{padding:"12px 16px", border:"1px solid rgba(255,100,100,0.2)", background:"rgba(255,100,100,0.05)", marginBottom:24}}>
+            <div style={{padding:"12px 16px", border:"1px solid rgba(255,100,100,0.2)", background:"rgba(255,100,100,0.05)", marginBottom:24}}
+            >
               <p style={{fontSize:12, color:"#ff8080", letterSpacing:"0.03em"}}>{error}</p>
             </div>
           )}
 
-          <button onClick={handleSubmit} disabled={loading} className="btn-gold" style={{width:"100%", justifyContent:"center"}}>
-            {loading ? <><span className="spinner-gold"/><span className="btn-text">Connexion en cours...</span></> : <span className="btn-text">{mode === "login" ? "Accéder à mon espace" : "Créer mon compte"}</span>}
-          </button>
+          <button onClick={handleSubmit} disabled={loading} className="btn-gold" style={{width:"100%", justifyContent:"center"}}
+            >{loading ? <><span className="spinner-gold"/><span className="btn-text">Connexion en cours...</span></> : <span className="btn-text">{mode === "login" ? "Accéder à mon espace" : "Créer mon compte"}</span>}</button>
 
           <div style={{display:"flex", alignItems:"center", gap:16, margin:"28px 0"}}>
             <div style={{flex:1, height:1, background:"rgba(201,168,76,0.12)"}}/>
@@ -117,8 +113,8 @@ export default function LoginPage() {
             <div style={{flex:1, height:1, background:"rgba(201,168,76,0.12)"}}/>
           </div>
 
-          <p style={{textAlign:"center", fontSize:11, color:"#6a6258", letterSpacing:"0.04em"}}>
-            En continuant, vous acceptez nos {" "}
+          <p style={{textAlign:"center", fontSize:11, color:"#6a6258", letterSpacing:"0.04em"}}
+            >En continuant, vous acceptez nos {" "}
             <Link href="#" style={{color:"#c9a84c", textDecoration:"none"}}>conditions d&apos;utilisation</Link>
           </p>
 
