@@ -29,7 +29,19 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({ email, password })
         if (error) throw error
       }
-      router.push("/dashboard")
+      // Email de bienvenue
+              try {
+                await fetch("/api/backend/emails/welcome", {
+                  method: "POST",
+                  headers: {"Content-Type": "application/json"},
+                  body: JSON.stringify({
+                    email: data.user?.email || "",
+                    prenom: data.user?.user_metadata?.full_name || "",
+                    plan: "free"
+                  })
+                })
+              } catch {}
+              router.push("/dashboard")
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
   }
