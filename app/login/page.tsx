@@ -25,23 +25,24 @@ export default function LoginPage() {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
+        router.push("/dashboard")
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password })
         if (error) throw error
+        // Email de bienvenue
+        try {
+          await fetch("/api/backend/emails/welcome", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+              email: data.user?.email || "",
+              prenom: data.user?.user_metadata?.full_name || "",
+              plan: "free"
+            })
+          })
+        } catch {}
+        router.push("/dashboard")
       }
-      // Email de bienvenue
-              try {
-                await fetch("/api/backend/emails/welcome", {
-                  method: "POST",
-                  headers: {"Content-Type": "application/json"},
-                  body: JSON.stringify({
-                    email: data.user?.email || "",
-                    prenom: data.user?.user_metadata?.full_name || "",
-                    plan: "free"
-                  })
-                })
-              } catch {}
-              router.push("/dashboard")
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
   }
@@ -71,9 +72,7 @@ export default function LoginPage() {
                 <line x1="5" y1="17" x2="13" y2="17" stroke="#c9a84c" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
             </div>
-            <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:300, letterSpacing:"0.1em", color:"#f5f0e8"}}>
-              Éloquence<span style={{color:"#c9a84c", fontStyle:"italic"}}>.ai</span>
-            </span>
+            <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:300, letterSpacing:"0.1em", color:"#f5f0e8"}}>Éloquence<span style={{color:"#c9a84c", fontStyle:"italic"}}>.ai</span></span>
           </Link>
 
           <p className="ornament" style={{marginBottom:24}}>✦</p>
@@ -82,7 +81,7 @@ export default function LoginPage() {
             {mode === "login" ? "Bon retour" : "Rejoignez-nous"}
           </h1>
           <p style={{fontSize:12, color:"#6a6258", marginBottom:40, letterSpacing:"0.04em"}}>
-            {mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"}{" "}
+            {mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"} {" "}
             <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
               style={{color:"#c9a84c", background:"none", border:"none", cursor:"pointer", fontSize:12, fontFamily:"'Raleway',sans-serif", letterSpacing:"0.04em", textDecoration:"underline"}}>
               {mode === "login" ? "Créer un compte" : "Se connecter"}
@@ -119,7 +118,7 @@ export default function LoginPage() {
           </div>
 
           <p style={{textAlign:"center", fontSize:11, color:"#6a6258", letterSpacing:"0.04em"}}>
-            En continuant, vous acceptez nos{" "}
+            En continuant, vous acceptez nos {" "}
             <Link href="#" style={{color:"#c9a84c", textDecoration:"none"}}>conditions d&apos;utilisation</Link>
           </p>
 
