@@ -9,6 +9,12 @@ const PILLARS = [
   { num:"II",  title:"Simulation d'élite",     desc:"Affrontez des interlocuteurs IA incarnant les situations les plus exigeantes de la vie professionnelle." },
   { num:"III", title:"Entraînement socratique",desc:"500 sujets de philosophie et société. Le dialogue comme méthode d'élévation de la pensée." },
   { num:"IV",  title:"Réécriture oratoire",    desc:"Vos discours transformés selon les canons de la rhétorique classique — exorde, narration, péroraison." },
+  {
+    num: "V",
+    title: "Plaidoirie juridique",
+    desc: "Résolvez vos cas pratiques. Légifrance × Thémis génère votre plaidoirie complète.",
+    tag: "Nouveau"
+  }
 ]
 
 const QUOTES = [
@@ -127,7 +133,7 @@ export default function HomePage() {
         <div className="rule-gold" style={{position:"absolute", bottom:0, left:0, right:0}}/>
       </section>
 
-      {/* QUATRE PILIERS */}
+      {/* CINQ PILIERS */}
       <section style={{maxWidth:1200, margin:"0 auto", padding:"100px 48px"}}>
         <div style={{textAlign:"center", marginBottom:72}}>
           <div className="eyebrow" style={{justifyContent:"center", marginBottom:20}}>
@@ -136,29 +142,19 @@ export default function HomePage() {
             <span style={{width:40, height:1, background:"linear-gradient(90deg,#c9a84c,transparent)", display:"block"}}/>
           </div>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(36px,4vw,56px)", fontWeight:300, lineHeight:1.15, marginBottom:16}}>
-            Quatre piliers de <em style={{color:"#c9a84c"}}>l&apos;excellence</em>
+            Cinq piliers de <em style={{color:"#c9a84c"}}>l&apos;excellence</em>
           </h2>
           <p style={{fontSize:14, color:"#6a6258", maxWidth:440, margin:"0 auto", lineHeight:1.9}}>
             Des outils forgés pour les orateurs d&apos;exception.
           </p>
         </div>
 
-        <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", border:"1px solid rgba(201,168,76,0.2)"}}>
+        <div style={{display:"grid", gridTemplateColumns:"repeat(5,1fr)", border:"1px solid rgba(201,168,76,0.2)"}}>
           {PILLARS.map((p, i) => (
-            <a key={i} href={["/record","/simulate","/training","/speech-analysis"][i]}
+            <a key={i} href={["/record","/simulate","/training","/speech-analysis","/legifrance"][i]}
               style={{
                 padding:"40px 28px",
-                borderRight: i < 3 ? "1px solid rgba(201,168,76,0.2)" : "none",
-              <Link href="/legifrance" style={{
-                border:"1px solid rgba(201,168,76,0.15)",
-                padding:"28px",textDecoration:"none",color:"inherit",display:"block",
-                transition:"all 0.3s",
-              }}
-              onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.4)"}}
-              onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.15)"}}>
-                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:400,marginBottom:8,color:"#f5f0e8"}}>Plaidoirie juridique</p>
-                <p style={{fontSize:11,color:"#6a6258",lineHeight:1.7}}>Résolution de cas pratiques — Légifrance × Thémis</p>
-              </Link>
+                borderRight: i < 4 ? "1px solid rgba(201,168,76,0.2)" : "none",
                 textDecoration:"none", color:"inherit",
                 position:"relative", overflow:"hidden",
                 transition:"background 0.4s",

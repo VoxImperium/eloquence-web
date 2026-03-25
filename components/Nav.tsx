@@ -53,7 +53,7 @@ export default function Nav() {
           ["/simulate",        "Simulation"],
           ["/training",        "Entraînement"],
           ["/speech-analysis",
-  { href: "/legifrance", label: "Plaidoirie" }, "Discours"],
+  "Discours"],
         ].map(([href, label]) => (
           <Link key={href} href={href} style={{
             fontFamily:"'Raleway',sans-serif",
