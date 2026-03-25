@@ -1,0 +1,8 @@
+{
+  "service": "eloquence-web",
+  "env": {
+    "NODE_ENV": "production",
+    "DATABASE_URL": "your-database-url",
+    "API_URL": "https://api.yourdomain.com"
+  }
+}
