@@ -13,6 +13,7 @@ const QUOTES = [
 function LoginForm() {
   const [email,    setEmail]    = useState("")
   const [password, setPassword] = useState("")
+  const [phone,    setPhone]    = useState("")
   const [mode,     setMode]     = useState("login")
   const [error,    setError]    = useState("")
   const [loading,  setLoading]  = useState(false)
@@ -50,6 +51,7 @@ function LoginForm() {
           body: JSON.stringify({
             email: data.user?.email || "",
             prenom: data.user?.user_metadata?.full_name || "",
+            phone: phone || "",
             plan: "free"
           })
         }).catch(() => {})
@@ -105,7 +107,7 @@ function LoginForm() {
           </h1>
           <p style={{fontSize:12, color:"#6a6258", marginBottom:40, letterSpacing:"0.04em"}}>
             {mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"} {" "}
-            <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
+            <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setPhone("") }}
               style={{color:"#c9a84c", background:"none", border:"none", cursor:"pointer", fontSize:12, fontFamily:"'Raleway',sans-serif", letterSpacing:"0.04em", textDecoration:"underline"}}>
               {mode === "login" ? "Créer un compte" : "Se connecter"}
             </button>
@@ -123,6 +125,21 @@ function LoginForm() {
               className="input-oratoire" placeholder="••••••••••"
               onKeyDown={e => e.key === "Enter" && handleSubmit()}/>
           </div>
+
+          {mode === "signup" && (
+            <div style={{marginBottom:28}}>
+              <label className="label-oratoire">
+                Téléphone <span style={{color:"#6a6258", fontSize:10, letterSpacing:"0.05em"}}>(optionnel)</span>
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                className="input-oratoire"
+                placeholder="+33 6 00 00 00 00"
+              />
+            </div>
+          )}
 
           {error && (
             <div style={{padding:"12px 16px", border:"1px solid rgba(255,100,100,0.2)", background:"rgba(255,100,100,0.05)", marginBottom:24}}>
