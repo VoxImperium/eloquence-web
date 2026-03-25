@@ -1,4 +1,4 @@
-use client
+"use client"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
@@ -67,7 +67,7 @@ export default function LoginPage() {
         padding:"80px 64px",
         borderRight:"1px solid rgba(201,168,76,0.15)",
       }}>
-        <div style={{width:"100%, maxWidth:380}}>
+        <div style={{width:"100%", maxWidth:380}}>
 
           {/* Logo */}
           <Link href="/" style={{display:"flex", alignItems:"center", gap:12, textDecoration:"none", marginBottom:56}}>
@@ -124,8 +124,8 @@ export default function LoginPage() {
             <div style={{flex:1, height:1, background:"rgba(201,168,76,0.12)"}}/>
           </div>
 
-          <p style={{textAlign:"center", fontSize:11, color:"#6a6258", letterSpacing:"0.04em"}}
-            >En continuant, vous acceptez nos {" "}
+          <p style={{textAlign:"center", fontSize:11, color:"#6a6258", letterSpacing:"0.04em"}}>
+            En continuant, vous acceptez nos {" "}
             <Link href="#" style={{color:"#c9a84c", textDecoration:"none"}}>conditions d&apos;utilisation</Link>
           </p>
 
