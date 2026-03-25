@@ -84,6 +84,7 @@ export default function DashboardPage() {
           { label:"Simulation",     sub:"5 scénarios d'élite",      href:"/simulate"        },
           { label:"Entraînement",   sub:"500 sujets philosophiques", href:"/training"        },
           { label:"Mon discours",   sub:"Réécriture oratoire",      href:"/speech-analysis" },
+          { label:"Cas pratiques",   sub:"Légifrance × Thémis",       href:"/legifrance" },
         ].map(a => (
           <Link key={a.href} href={a.href} style={{
             border:"1px solid rgba(201,168,76,0.15)",
