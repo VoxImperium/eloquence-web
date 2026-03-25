@@ -10,8 +10,7 @@ const PLANS = [
     label:    "Étudiant",
     price:    "5,99",
     priceInt: 599,
-    priceId:  "  [0;32m✅[0m Éloquence Étudiant → Product: prod_UDI7V8GhJmeS8m | Price: price_1TErXhH7DqnrXksXUUdfrtir
-price_1TErXhH7DqnrXksXUUdfrtir",
+    priceId:  "price_1TErXhH7DqnrXksXUUdfrtir",
     sub:      "Examens, concours, formations",
     note:     "Justificatif étudiant requis",
     features: [
@@ -31,8 +30,7 @@ price_1TErXhH7DqnrXksXUUdfrtir",
     label:    "Basique",
     price:    "9,99",
     priceInt: 999,
-    priceId:  "  [0;32m✅[0m Éloquence Basique → Product: prod_UDI7ZVJQjwDvW9 | Price: price_1TErXiH7DqnrXksXUOM5DerM
-price_1TErXiH7DqnrXksXUOM5DerM",
+    priceId:  "price_1TErXiH7DqnrXksXUOM5DerM",
     sub:      "Professionnels en développement",
     note:     null,
     features: [
@@ -53,8 +51,7 @@ price_1TErXiH7DqnrXksXUOM5DerM",
     label:    "Entreprise",
     price:    "19,99",
     priceInt: 1999,
-    priceId:  "  [0;32m✅[0m Éloquence Entreprise → Product: prod_UDI73jeKzU1lGx | Price: price_1TErXiH7DqnrXksXqCVknpFH
-price_1TErXiH7DqnrXksXqCVknpFH",
+    priceId:  "price_1TErXiH7DqnrXksXqCVknpFH",
     sub:      "Cabinets, équipes, grandes écoles",
     note:     "Facturation annuelle : 2 mois offerts",
     features: [
