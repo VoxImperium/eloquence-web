@@ -29,18 +29,18 @@ export default function LoginPage() {
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password })
         if (error) throw error
-        // Email de bienvenue
-        try {
-          await fetch("/api/backend/emails/welcome", {
+        // Fire-and-forget welcome email — MUST NOT block or error the signup
+        setTimeout(() => {
+          fetch("/api/welcome-email", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              email: data.user?.email || "",
-              prenom: data.user?.user_metadata?.full_name || "",
+              email: data.user?.email ?? "",
+              prenom: data.user?.user_metadata?.full_name ?? "",
               plan: "free"
             })
-          })
-        } catch {}
+          }).catch(() => {})
+        }, 0)
         router.push("/dashboard")
       }
     } catch (e: any) { setError(e.message) }
