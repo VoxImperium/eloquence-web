@@ -1,14 +1,14 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState } from "react"
 import Link from "next/link"
 
 const DOMAINES = [
-  {id:"civil",         label:"Droit civil",        ex:"Accident, contrat, famille"},
-  {id:"penal",         label:"Droit pénal",         ex:"Escroquerie, violence, vol"},
-  {id:"social",        label:"Droit du travail",    ex:"Licenciement, harcèlement"},
-  {id:"commercial",    label:"Droit commercial",    ex:"Société, faillite, concurrence"},
-  {id:"administratif", label:"Droit administratif", ex:"Permis, fonction publique"},
-  {id:"consommation",  label:"Droit de la conso",   ex:"Produit défectueux, tromperie"},
+  {id:"civil",         label:"Droit civil",         ex:"Accident, contrat, voisinage, famille"},
+  {id:"penal",         label:"Droit pénal",          ex:"Escroquerie, violence, vol, abus de confiance"},
+  {id:"social",        label:"Droit du travail",     ex:"Licenciement, harcèlement, heures sup"},
+  {id:"commercial",    label:"Droit commercial",     ex:"Société, faillite, concurrence déloyale"},
+  {id:"administratif", label:"Droit administratif",  ex:"Permis de construire, fonction publique"},
+  {id:"consommation",  label:"Droit de la conso",    ex:"Produit défectueux, pratiques trompeuses"},
 ]
 
 const STEPS = [
@@ -20,50 +20,13 @@ const STEPS = [
 ]
 
 export default function LegifrangePage() {
-  const [faits,       setFaits]       = useState("")
-  const [domaine,     setDomaine]     = useState("civil")
-  const [position,    setPosition]    = useState("demandeur")
-  const [loading,     setLoading]     = useState(false)
-  const [pdfLoading,  setPdfLoading]  = useState(false)
-  const [result,      setResult]      = useState<any>(null)
-  const [step,        setStep]        = useState(0)
-  const [tab,         setTab]         = useState("plaidoirie")
-  const [inputMode,   setInputMode]   = useState<"text"|"pdf">("text")
-  const [pdfName,     setPdfName]     = useState("")
-  const [pdfInfo,     setPdfInfo]     = useState<any>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
-
-  const handlePdf = async (file: File) => {
-    if (!file) return
-    setPdfLoading(true)
-    setPdfName(file.name)
-    try {
-      const form = new FormData()
-      form.append("file", file)
-      const res = await fetch("/api/backend/legifrance/extract-pdf", {
-        method: "POST",
-        body: form,
-      })
-      if (!res.ok) {
-        const err = await res.json()
-        alert(err.detail || "Erreur extraction PDF")
-        return
-      }
-      const data = await res.json()
-      setFaits(data.text)
-      setPdfInfo(data)
-    } catch {
-      alert("Erreur lors de la lecture du PDF")
-    } finally {
-      setPdfLoading(false)
-    }
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file?.type === "application/pdf") handlePdf(file)
-  }
+  const [faits,     setFaits]     = useState("")
+  const [domaine,   setDomaine]   = useState("civil")
+  const [position,  setPosition]  = useState("demandeur")
+  const [loading,   setLoading]   = useState(false)
+  const [result,    setResult]    = useState<any>(null)
+  const [step,      setStep]      = useState(0)
+  const [tab,       setTab]       = useState("plaidoirie")
 
   const resoudre = async () => {
     if (!faits.trim()) return
@@ -100,7 +63,6 @@ export default function LegifrangePage() {
   return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:960, margin:"0 auto"}}>
 
-      {/* Header */}
       <div style={{marginBottom:48}}>
         <Link href="/" style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"#6a6258",textDecoration:"none"}}>← Retour</Link>
         <div style={{marginTop:20,marginBottom:16}}>
@@ -110,7 +72,7 @@ export default function LegifrangePage() {
           Résolution de <em style={{color:"#c9a84c"}}>cas pratiques</em>
         </h1>
         <p style={{fontSize:13,color:"#6a6258",marginTop:12,lineHeight:1.9,maxWidth:560}}>
-          Déposez votre sujet PDF ou décrivez votre cas. Thémis identifie les articles, recherche la jurisprudence et plaide pour vous.
+          Décrivez votre cas. Thémis identifie les articles applicables, recherche la jurisprudence pertinente et rédige votre plaidoirie complète.
         </p>
       </div>
 
@@ -135,7 +97,7 @@ export default function LegifrangePage() {
       </div>
 
       {/* Position */}
-      <div style={{display:"flex",gap:8,marginBottom:24}}>
+      <div style={{display:"flex",gap:8,marginBottom:20}}>
         {[["demandeur","Je suis demandeur / plaignant"],["defenseur","Je suis défendeur / mis en cause"]].map(([v,l]) => (
           <button key={v} onClick={() => setPosition(v)} style={{
             flex:1,padding:"12px",
@@ -148,88 +110,12 @@ export default function LegifrangePage() {
         ))}
       </div>
 
-      {/* Mode saisie */}
-      <div style={{display:"flex",gap:4,marginBottom:20}}>
-        {[["text","✏️ Saisie manuelle"],["pdf","📄 Importer un PDF"]].map(([m,l]) => (
-          <button key={m} onClick={() => setInputMode(m as any)} style={{
-            fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.15em",textTransform:"uppercase",
-            padding:"10px 24px",
-            border:`1px solid ${inputMode===m?"rgba(201,168,76,0.5)":"rgba(201,168,76,0.15)"}`,
-            background:inputMode===m?"rgba(201,168,76,0.05)":"transparent",
-            cursor:"pointer",color:inputMode===m?"#c9a84c":"#6a6258",transition:"all 0.3s",
-          }}>{l}</button>
-        ))}
-      </div>
-
-      {/* Zone PDF */}
-      {inputMode === "pdf" && (
-        <div
-          onDrop={handleDrop}
-          onDragOver={e => e.preventDefault()}
-          onClick={() => fileRef.current?.click()}
-          style={{
-            border:"1px dashed rgba(201,168,76,0.3)",
-            padding:"48px",textAlign:"center",
-            cursor:"pointer",marginBottom:20,
-            background:"rgba(201,168,76,0.02)",
-            transition:"all 0.3s",
-          }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.5)"}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.3)"}
-        >
-          <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}}
-            onChange={e => { const f = e.target.files?.[0]; if(f) handlePdf(f) }}/>
-
-          {pdfLoading ? (
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
-              <div style={{width:32,height:32,border:"1px solid rgba(201,168,76,0.3)",borderTop:"1px solid #c9a84c",borderRadius:"50%",animation:"spin 1s linear infinite"}}/>
-              <p style={{fontFamily:"'Raleway',sans-serif",fontSize:11,letterSpacing:"0.15em",color:"#6a6258"}}>Extraction du texte en cours...</p>
-            </div>
-          ) : pdfName ? (
-            <div>
-              <p style={{fontSize:32,marginBottom:12}}>📄</p>
-              <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#c9a84c",marginBottom:8}}>{pdfName}</p>
-              {pdfInfo && (
-                <p style={{fontSize:11,color:"#6a6258"}}>
-                  {pdfInfo.original_length} mots extraits
-                  {pdfInfo.summarized && " — résumé automatique appliqué"}
-                </p>
-              )}
-              <p style={{fontSize:10,color:"#6a6258",marginTop:12,letterSpacing:"0.1em"}}>Cliquez pour changer de fichier</p>
-            </div>
-          ) : (
-            <div>
-              <p style={{fontSize:40,marginBottom:16}}>📄</p>
-              <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#f5f0e8",marginBottom:8}}>Déposez votre sujet PDF ici</p>
-              <p style={{fontSize:12,color:"#6a6258",lineHeight:1.7}}>
-                Arrêt, sujet d&apos;examen, cas pratique, article de code<br/>
-                ou glissez-déposez directement le fichier
-              </p>
-              <p style={{fontSize:10,color:"#6a6258",marginTop:16,letterSpacing:"0.1em"}}>Format PDF · Max 10 MB</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Zone texte — affichée dans les deux modes */}
+      {/* Faits */}
       <div style={{marginBottom:20}}>
-        {inputMode === "text" && (
-          <p style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.25em",textTransform:"uppercase",color:"#6a6258",marginBottom:14}}>Exposé des faits</p>
-        )}
-        {inputMode === "pdf" && faits && (
-          <div style={{marginBottom:12}}>
-            <p style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"#6a6258",marginBottom:8}}>
-              Texte extrait — modifiable si nécessaire
-            </p>
-          </div>
-        )}
+        <p style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.25em",textTransform:"uppercase",color:"#6a6258",marginBottom:14}}>Exposé des faits</p>
         <textarea value={faits} onChange={e => setFaits(e.target.value)}
-          placeholder={inputMode==="pdf"
-            ? "Le texte extrait du PDF apparaîtra ici. Vous pouvez le modifier avant l'analyse..."
-            : "Décrivez votre cas avec précision.\n\nExemple : Mon client a été licencié le 15 mars 2024 après 8 ans d'ancienneté. Son employeur lui reproche une prétendue insuffisance professionnelle mais n'a jamais effectué d'entretien annuel ni de mise en garde préalable..."
-          }
-          className="input-box" rows={inputMode==="pdf"?6:8} style={{marginBottom:16}}/>
-
+          placeholder={`Décrivez votre cas avec précision.\n\nExemple : Mon client a été licencié le 15 mars 2024 après 8 ans d'ancienneté. Son employeur lui reproche une prétendue insuffisance professionnelle mais n'a jamais effectué d'entretien annuel ni de mise en garde préalable. Le salarié a toujours eu des évaluations positives. La réelle raison semble être son refus de signer une rupture conventionnelle proposée 2 mois avant le licenciement...`}
+          className="input-box" rows={8} style={{marginBottom:16}}/>
         <button onClick={resoudre} disabled={!faits.trim()||loading} className="btn-gold" style={{width:"100%",justifyContent:"center"}}>
           {loading
             ? <><span className="spinner-gold"/><span className="btn-text">Thémis instruit le dossier...</span></>
@@ -266,17 +152,17 @@ export default function LegifrangePage() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
               <div>
                 <p style={{fontFamily:"'Raleway',sans-serif",fontSize:9,letterSpacing:"0.25em",textTransform:"uppercase",color:"#6a6258",marginBottom:8}}>Qualification juridique</p>
-                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:17,color:"#f5f0e8",lineHeight:1.6}}>{result.qualification||result.analyse_juridique?.qualification_juridique}</p>
+                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:17,color:"#f5f0e8",lineHeight:1.6}}>{result.qualification || result.analyse_juridique?.qualification_juridique}</p>
               </div>
               <div>
                 <p style={{fontFamily:"'Raleway',sans-serif",fontSize:9,letterSpacing:"0.25em",textTransform:"uppercase",color:"#6a6258",marginBottom:8}}>Stratégie</p>
-                <p style={{fontSize:12,color:"#8a8070",lineHeight:1.7}}>{result.strategie||result.analyse_juridique?.strategie}</p>
+                <p style={{fontSize:12,color:"#8a8070",lineHeight:1.7}}>{result.strategie || result.analyse_juridique?.strategie}</p>
               </div>
             </div>
             <div style={{display:"flex",gap:16,marginTop:16}}>
-              <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,color:"#6a6258"}}>{result.nb_articles} article(s)</span>
+              <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,color:"#6a6258"}}>{result.nb_articles} article(s) identifié(s)</span>
               <span style={{color:"rgba(201,168,76,0.3)"}}>·</span>
-              <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,color:"#6a6258"}}>{result.nb_jurisprudence} arrêt(s)</span>
+              <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,color:"#6a6258"}}>{result.nb_jurisprudence} arrêt(s) trouvé(s)</span>
             </div>
           </div>
 
@@ -301,6 +187,7 @@ export default function LegifrangePage() {
             ))}
           </div>
 
+          {/* PLAIDOIRIE */}
           {tab==="plaidoirie" && (
             <div>
               <div style={{display:"flex",gap:24,marginBottom:20,padding:"12px 20px",border:"1px solid rgba(201,168,76,0.1)",background:"rgba(201,168,76,0.02)"}}>
@@ -317,6 +204,7 @@ export default function LegifrangePage() {
             </div>
           )}
 
+          {/* FONDEMENTS */}
           {tab==="fondements" && (
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {(result.articles_cites||[]).map((a: any,i: number) => (
@@ -331,27 +219,40 @@ export default function LegifrangePage() {
                     </span>
                   </div>
                   <p style={{fontFamily:"'Libre Baskerville',serif",fontSize:13,fontStyle:"italic",color:"#8a8070",lineHeight:1.8,marginBottom:10}}>{a.texte}</p>
-                  {a.pertinence&&<p style={{fontSize:11,color:"#6a6258",lineHeight:1.6}}><span style={{color:"rgba(201,168,76,0.5)"}}>Application : </span>{a.pertinence}</p>}
+                  {a.pertinence && <p style={{fontSize:11,color:"#6a6258",lineHeight:1.6}}><span style={{color:"rgba(201,168,76,0.5)"}}>Application : </span>{a.pertinence}</p>}
                 </div>
               ))}
+              {(result.articles_cites||[]).length === 0 && (
+                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontStyle:"italic",color:"#6a6258",textAlign:"center",padding:32}}>Aucun article identifié</p>
+              )}
             </div>
           )}
 
+          {/* JURISPRUDENCE */}
           {tab==="jurisprudence" && (
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              {(result.jurisprudence||[]).length > 0 ? (result.jurisprudence||[]).map((j: any,i: number) => (
+              {(result.jurisprudence||[]).map((j: any,i: number) => (
                 <div key={i} style={{border:"1px solid rgba(201,168,76,0.12)",padding:"20px 24px"}}>
                   <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:10}}>
-                    <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#f5f0e8"}}>Cass. {j.chambre} — {j.date}</p>
+                    <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#f5f0e8"}}>
+                      Cass. {j.chambre} — {j.date}
+                    </p>
                     <span style={{fontFamily:"'Raleway',sans-serif",fontSize:9,color:"#6a6258",letterSpacing:"0.1em"}}>n°{j.numero}</span>
                   </div>
-                  {j.solution&&<p style={{fontSize:11,color:"#c9a84c",marginBottom:8}}>{j.solution}</p>}
+                  {j.solution && <p style={{fontSize:11,color:"#c9a84c",marginBottom:8,letterSpacing:"0.05em"}}>{j.solution}</p>}
                   <p style={{fontSize:12,color:"#6a6258",lineHeight:1.8}}>{j.resume}</p>
+                  {j.themes?.length > 0 && (
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
+                      {j.themes.slice(0,3).map((t: string,ti: number) => (
+                        <span key={ti} style={{fontSize:10,color:"#6a6258",border:"1px solid rgba(201,168,76,0.1)",padding:"2px 10px"}}>{t}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )) : (
+              ))}
+              {(result.jurisprudence||[]).length === 0 && (
                 <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontStyle:"italic",color:"#6a6258",textAlign:"center",padding:32}}>
-                  Aucune jurisprudence trouvée via l&apos;API publique.<br/>
-                  <span style={{fontSize:13}}>Connectez PISTE pour accéder à la base complète.</span>
+                  Aucune jurisprudence trouvée — l&apos;API Judilibre peut nécessiter une authentification.
                 </p>
               )}
             </div>
@@ -362,7 +263,6 @@ export default function LegifrangePage() {
       <style>{`
         @keyframes pulseStep{0%,100%{opacity:1}50%{opacity:0.3}}
         @keyframes sweepAnim{0%{transform:translateX(-200%)}100%{transform:translateX(300%)}}
-        @keyframes spin{to{transform:rotate(360deg)}}
       `}</style>
     </main>
   )
