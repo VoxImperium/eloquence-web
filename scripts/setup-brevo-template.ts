@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 async function createOrUpdateTemplate() {
     const apiKey = process.env.BREVO_API_KEY;
 
@@ -8,7 +6,6 @@ async function createOrUpdateTemplate() {
         return;
     }
 
-    // Replace with your specific template data
     const templateData = {
         name: 'Welcome Email',
         subject: 'Welcome to Our Service!',
@@ -16,21 +13,24 @@ async function createOrUpdateTemplate() {
     };
 
     try {
-        // Create or update the template via Brevo API
-        const response = await axios.post('https://api.brevo.com/v1/templates', templateData, {
+        const response = await fetch('https://api.brevo.com/v1/templates', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'api-key': apiKey,
             },
+            body: JSON.stringify(templateData),
         });
 
-        if (response.status === 200 || response.status === 201) {
-            console.log('Template created/updated successfully:', response.data);
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Template created/updated successfully:', data);
         } else {
-            console.log('Failed to create/update template:', response.data);
+            const data = await response.json();
+            console.log('Failed to create/update template:', data);
         }
-    } catch (error) {
-        console.error('Error while making request to Brevo API:', error.message);
+    } catch (error: unknown) {
+        console.error('Error while making request to Brevo API:', (error as Error).message);
     }
 }
 
