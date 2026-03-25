@@ -1,4 +1,4 @@
-"use client"
+use client
 import { useState } from "react"
 import { createClient } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
@@ -16,12 +16,21 @@ export default function LoginPage() {
   const [mode,     setMode]     = useState("login")
   const [error,    setError]    = useState("")
   const [loading,  setLoading]  = useState(false)
-  const supabase = createClient()
   const router   = useRouter()
 
   const handleSubmit = async () => {
     setError(""); setLoading(true)
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!supabaseUrl || supabaseUrl.includes("placeholder") || !supabaseKey || supabaseKey.includes("placeholder")) {
+      setError("Configuration manquante. Veuillez contacter le support.")
+      setLoading(false)
+      return
+    }
+
     try {
+      const supabase = createClient()
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
@@ -58,7 +67,7 @@ export default function LoginPage() {
         padding:"80px 64px",
         borderRight:"1px solid rgba(201,168,76,0.15)",
       }}>
-        <div style={{width:"100%", maxWidth:380}}>
+        <div style={{width:"100%, maxWidth:380}}>
 
           {/* Logo */}
           <Link href="/" style={{display:"flex", alignItems:"center", gap:12, textDecoration:"none", marginBottom:56}}>
@@ -75,13 +84,15 @@ export default function LoginPage() {
 
           <p className="ornament" style={{marginBottom:24}}>✦</p>
 
-          <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300, marginBottom:8}}
-            >{mode === "login" ? "Bon retour" : "Rejoignez-nous"}</h1>
-          <p style={{fontSize:12, color:"#6a6258", marginBottom:40, letterSpacing:"0.04em"}}
-            >{mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"} {" "}
+          <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300, marginBottom:8}}>
+            {mode === "login" ? "Bon retour" : "Rejoignez-nous"}
+          </h1>
+          <p style={{fontSize:12, color:"#6a6258", marginBottom:40, letterSpacing:"0.04em"}}>
+            {mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"} {" "}
             <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              style={{color:"#c9a84c", background:"none", border:"none", cursor:"pointer", fontSize:12, fontFamily:"'Raleway',sans-serif", letterSpacing:"0.04em", textDecoration:"underline"}}
-              >{mode === "login" ? "Créer un compte" : "Se connecter"}</button>
+              style={{color:"#c9a84c", background:"none", border:"none", cursor:"pointer", fontSize:12, fontFamily:"'Raleway',sans-serif", letterSpacing:"0.04em", textDecoration:"underline"}}>
+              {mode === "login" ? "Créer un compte" : "Se connecter"}
+            </button>
           </p>
 
           <div style={{marginBottom:28}}>
@@ -98,14 +109,14 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div style={{padding:"12px 16px", border:"1px solid rgba(255,100,100,0.2)", background:"rgba(255,100,100,0.05)", marginBottom:24}}
-            >
+            <div style={{padding:"12px 16px", border:"1px solid rgba(255,100,100,0.2)", background:"rgba(255,100,100,0.05)", marginBottom:24}}>
               <p style={{fontSize:12, color:"#ff8080", letterSpacing:"0.03em"}}>{error}</p>
             </div>
           )}
 
-          <button onClick={handleSubmit} disabled={loading} className="btn-gold" style={{width:"100%", justifyContent:"center"}}
-            >{loading ? <><span className="spinner-gold"/><span className="btn-text">Connexion en cours...</span></> : <span className="btn-text">{mode === "login" ? "Accéder à mon espace" : "Créer mon compte"}</span>}</button>
+          <button onClick={handleSubmit} disabled={loading} className="btn-gold" style={{width:"100%", justifyContent:"center"}}>
+            {loading ? <><span className="spinner-gold"/><span className="btn-text">Connexion en cours...</span></> : <span className="btn-text">{mode === "login" ? "Accéder à mon espace" : "Créer mon compte"}</span>}
+          </button>
 
           <div style={{display:"flex", alignItems:"center", gap:16, margin:"28px 0"}}>
             <div style={{flex:1, height:1, background:"rgba(201,168,76,0.12)"}}/>
