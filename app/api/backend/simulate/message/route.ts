@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const response = await fetch("http://localhost:8000/simulate/message", {
+    const response = await fetch("https://eloquence-api-production.up.railway.app/simulate/message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
