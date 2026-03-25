@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
+import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const CONTEXTS = [
@@ -18,7 +19,9 @@ export default function RecordPage() {
   const [seconds,  setSeconds]  = useState(0)
   const [error,    setError]    = useState("")
   const [step,     setStep]     = useState(0)
-  const [userId,   setUserId]   = useState(null)
+  const [userId,   setUserId]   = useState<string|null>(null)
+  const [plan,     setPlan]     = useState<string|null>(null)
+  const [used,     setUsed]     = useState(0)
 
   const mrRef      = useRef(null)
   const chunksRef  = useRef([])
@@ -28,7 +31,13 @@ export default function RecordPage() {
   const supabase   = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id) })
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push("/login?redirect=/record"); return }
+      setUserId(user.id)
+      setUsed(getUsage(user.id, "vocal"))
+      supabase.from("profiles").select("plan").eq("id", user.id).single()
+        .then(({ data }) => setPlan(data?.plan ?? null))
+    })
   }, [])
 
   useEffect(() => {
@@ -84,6 +93,7 @@ export default function RecordPage() {
       const res = await fetch("/api/backend/analyze", { method: "POST", body: form })
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
+      if (userId) { incrementUsage(userId, "vocal"); setUsed(u => u + 1) }
       sessionStorage.setItem("lastResult", JSON.stringify(data))
       router.push("/results")
     } catch (e: any) {
@@ -94,6 +104,11 @@ export default function RecordPage() {
 
   const fmt = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`
 
+  const limits   = getPlanLimits(plan)
+  const limit    = limits.vocal
+  const quotaMax = limit === Infinity ? null : limit
+  const blocked  = quotaMax !== null && used >= quotaMax
+
   return (
     <main style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"80px 24px"}}>
       <div style={{width:"100%", maxWidth:560}}>
@@ -103,7 +118,18 @@ export default function RecordPage() {
         <Link href="/legifrance" style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"rgba(201,168,76,0.6)",textDecoration:"none",marginLeft:24}}>
           Plaider un cas →
         </Link>
-          <div className="eyebrow" style={{marginBottom:16}}>Analyse vocale</div>
+          <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:4, marginTop:16}}>
+            <div className="eyebrow" style={{marginBottom:0}}>Analyse vocale</div>
+            {quotaMax !== null && (
+              <span style={{
+                fontSize:10, letterSpacing:"0.1em", color: blocked ? "#c97a4c" : "#6a6258",
+                border:`1px solid ${blocked ? "rgba(201,120,76,0.3)" : "rgba(201,168,76,0.15)"}`,
+                padding:"3px 10px",
+              }}>
+                {used} / {quotaMax} analyses ce mois
+              </span>
+            )}
+          </div>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(36px,5vw,52px)", fontWeight:300, lineHeight:1.1, marginBottom:12}}>
             Votre discours,<br/><em style={{color:"#c9a84c"}}>analysé</em>
           </h1>
@@ -138,53 +164,77 @@ export default function RecordPage() {
         {(status === "idle" || status === "recording") && (
           <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:28, padding:"40px 0"}}>
 
-            {status === "recording" && (
-              <div style={{textAlign:"center"}}>
-                <div style={{
-                  fontFamily:"'Cormorant Garamond',serif",
-                  fontSize:64, fontWeight:300,
-                  color:"#c9a84c", lineHeight:1,
-                  letterSpacing:"0.05em",
-                }}>
-                  {fmt(seconds)}
-                </div>
-                <div style={{display:"flex", alignItems:"center", justifyContent:"center", gap:8, marginTop:8}}>
-                  <div style={{width:6, height:6, borderRadius:"50%", background:"#c9a84c", animation:"pulseStep 1s ease-in-out infinite"}}/>
-                  <span style={{fontSize:10, letterSpacing:"0.25em", textTransform:"uppercase", color:"#6a6258"}}>Enregistrement</span>
-                </div>
+            {blocked && status === "idle" ? (
+              <div style={{
+                width:"100%",
+                background:"rgba(10,10,15,0.95)", backdropFilter:"blur(12px)",
+                border:"1px solid rgba(201,168,76,0.3)",
+                padding:"32px 28px",
+                textAlign:"center",
+              }}>
+                <p className="ornament" style={{marginBottom:12}}>✦</p>
+                <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:"#f5f0e8", marginBottom:8}}>
+                  Quota mensuel atteint
+                </p>
+                <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7, marginBottom:20}}>
+                  Vous avez utilisé toutes vos analyses vocales ce mois-ci.<br/>
+                  Passez à un forfait supérieur pour continuer.
+                </p>
+                <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
+                  <span className="btn-text">Voir les forfaits →</span>
+                </Link>
               </div>
+            ) : (
+              <>
+                {status === "recording" && (
+                  <div style={{textAlign:"center"}}>
+                    <div style={{
+                      fontFamily:"'Cormorant Garamond',serif",
+                      fontSize:64, fontWeight:300,
+                      color:"#c9a84c", lineHeight:1,
+                      letterSpacing:"0.05em",
+                    }}>
+                      {fmt(seconds)}
+                    </div>
+                    <div style={{display:"flex", alignItems:"center", justifyContent:"center", gap:8, marginTop:8}}>
+                      <div style={{width:6, height:6, borderRadius:"50%", background:"#c9a84c", animation:"pulseStep 1s ease-in-out infinite"}}/>
+                      <span style={{fontSize:10, letterSpacing:"0.25em", textTransform:"uppercase", color:"#6a6258"}}>Enregistrement</span>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={status === "idle" ? startRec : stopRec}
+                  style={{
+                    width:96, height:96,
+                    borderRadius:"50%",
+                    border:`1px solid ${status === "recording" ? "rgba(201,168,76,0.6)" : "rgba(201,168,76,0.3)"}`,
+                    background: status === "recording" ? "rgba(201,168,76,0.1)" : "transparent",
+                    cursor:"pointer",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    transition:"all 0.4s",
+                    animation: status === "recording" ? "pulseStep 2s ease-in-out infinite" : "none",
+                  }}
+                  onMouseEnter={e => { if (status === "idle") (e.currentTarget as HTMLElement).style.borderColor = "rgba(201,168,76,0.7)" }}
+                  onMouseLeave={e => { if (status === "idle") (e.currentTarget as HTMLElement).style.borderColor = "rgba(201,168,76,0.3)" }}
+                >
+                  {status === "idle" ? (
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                      <rect x="10" y="2" width="8" height="14" rx="4" fill="#c9a84c"/>
+                      <path d="M5 14 Q5 22 14 22 Q23 22 23 14" stroke="#c9a84c" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                      <line x1="14" y1="22" x2="14" y2="26" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round"/>
+                      <line x1="8" y1="26" x2="20" y2="26" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  ) : (
+                    <div style={{width:14, height:14, background:"#c9a84c"}}/>
+                  )}
+                </button>
+
+                <p style={{fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:"#6a6258"}}>
+                  {status === "idle" ? "Cliquez pour débuter" : "Cliquez pour terminer"}
+                </p>
+              </>
             )}
-
-            <button
-              onClick={status === "idle" ? startRec : stopRec}
-              style={{
-                width:96, height:96,
-                borderRadius:"50%",
-                border:`1px solid ${status === "recording" ? "rgba(201,168,76,0.6)" : "rgba(201,168,76,0.3)"}`,
-                background: status === "recording" ? "rgba(201,168,76,0.1)" : "transparent",
-                cursor:"pointer",
-                display:"flex", alignItems:"center", justifyContent:"center",
-                transition:"all 0.4s",
-                animation: status === "recording" ? "pulseStep 2s ease-in-out infinite" : "none",
-              }}
-              onMouseEnter={e => { if (status === "idle") (e.currentTarget as HTMLElement).style.borderColor = "rgba(201,168,76,0.7)" }}
-              onMouseLeave={e => { if (status === "idle") (e.currentTarget as HTMLElement).style.borderColor = "rgba(201,168,76,0.3)" }}
-            >
-              {status === "idle" ? (
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <rect x="10" y="2" width="8" height="14" rx="4" fill="#c9a84c"/>
-                  <path d="M5 14 Q5 22 14 22 Q23 22 23 14" stroke="#c9a84c" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-                  <line x1="14" y1="22" x2="14" y2="26" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="8" y1="26" x2="20" y2="26" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              ) : (
-                <div style={{width:14, height:14, background:"#c9a84c"}}/>
-              )}
-            </button>
-
-            <p style={{fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:"#6a6258"}}>
-              {status === "idle" ? "Cliquez pour débuter" : "Cliquez pour terminer"}
-            </p>
           </div>
         )}
 

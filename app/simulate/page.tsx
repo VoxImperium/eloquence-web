@@ -1,5 +1,8 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase"
+import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const SCENARIOS = [
@@ -19,10 +22,25 @@ export default function SimulatePage() {
   const [loading,   setLoading]   = useState(false)
   const [debrief,   setDebrief]   = useState<any>(null)
   const [recording, setRecording] = useState(false)
+  const [userId,    setUserId]    = useState<string|null>(null)
+  const [plan,      setPlan]      = useState<string|null>(null)
+  const [used,      setUsed]      = useState(0)
 
   const mrRef     = useRef<any>(null)
   const chunksRef = useRef<any[]>([])
   const endRef    = useRef<any>(null)
+  const router    = useRouter()
+  const supabase  = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push("/login?redirect=/simulate"); return }
+      setUserId(user.id)
+      setUsed(getUsage(user.id, "simulations"))
+      supabase.from("profiles").select("plan").eq("id", user.id).single()
+        .then(({ data }) => setPlan(data?.plan ?? null))
+    })
+  }, [])
 
   useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}) }, [messages])
 
@@ -33,6 +51,7 @@ export default function SimulatePage() {
       body:JSON.stringify({scenario:scenario.id, messages:[], user_input:`Bonjour, je suis prêt. ${topic ? "Sujet : "+topic : ""}`, topic})
     })
     const data = await res.json()
+    if (userId) { incrementUsage(userId, "simulations"); setUsed(u => u + 1) }
     setMessages([{role:"assistant", content:data.response, name:data.persona_name}])
     setLoading(false)
   }
@@ -79,44 +98,82 @@ export default function SimulatePage() {
   const stopVoice = () => { mrRef.current?.stop(); mrRef.current?.stream.getTracks().forEach((t:any)=>t.stop()); setRecording(false) }
 
   const S = scenario ? SCENARIOS.find(s=>s.id===scenario.id) : null
+  const limits   = getPlanLimits(plan)
+  const simLimit = limits.simulations
+  const quotaMax = simLimit === Infinity ? null : simLimit
+  const blocked  = quotaMax !== null && used >= quotaMax
 
   // SÉLECTION
   if (step==="select") return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:800, margin:"0 auto"}}>
       <div style={{marginBottom:48}}>
         <Link href="/" style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.2em", textTransform:"uppercase", color:"#6a6258", textDecoration:"none"}}>← Retour</Link>
-        <div className="eyebrow" style={{marginTop:20, marginBottom:16}}>Simulation d&apos;élite</div>
+        <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:20, marginBottom:16}}>
+          <div className="eyebrow" style={{marginBottom:0}}>Simulation d&apos;élite</div>
+          {quotaMax !== null && (
+            <span style={{
+              fontSize:10, letterSpacing:"0.1em", color: blocked ? "#c97a4c" : "#6a6258",
+              border:`1px solid ${blocked ? "rgba(201,120,76,0.3)" : "rgba(201,168,76,0.15)"}`,
+              padding:"3px 10px",
+            }}>
+              {used} / {quotaMax} simulations ce mois
+            </span>
+          )}
+        </div>
         <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(36px,5vw,56px)", fontWeight:300, lineHeight:1.1}}>
           Choisissez votre <em style={{color:"#c9a84c"}}>épreuve</em>
         </h1>
       </div>
       <div style={{height:1, background:"linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)", marginBottom:40}}/>
-      <div style={{display:"flex", flexDirection:"column", gap:2}}>
-        {SCENARIOS.map(s => (
-          <button key={s.id} onClick={() => setScenario(s)}
-            style={{
-              display:"flex", alignItems:"center", gap:24,
-              padding:"24px 28px",
-              border:`1px solid ${scenario?.id===s.id ? "rgba(201,168,76,0.5)" : "rgba(201,168,76,0.12)"}`,
-              background: scenario?.id===s.id ? "rgba(201,168,76,0.04)" : "transparent",
-              cursor:"pointer", textAlign:"left",
-              transition:"all 0.3s",
-            }}
-            onMouseEnter={e => { if(scenario?.id!==s.id) { (e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.3)" }}}
-            onMouseLeave={e => { if(scenario?.id!==s.id) { (e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.12)" }}}>
-            <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:300, color:"rgba(201,168,76,0.3)", width:32, flexShrink:0}}>{s.num}</span>
-            <div>
-              <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:400, color:"#f5f0e8", marginBottom:4}}>{s.label}</p>
-              <p style={{fontSize:11, color:"#6a6258", lineHeight:1.6, letterSpacing:"0.02em"}}>{s.sub}</p>
-            </div>
-          </button>
-        ))}
-      </div>
-      <div style={{marginTop:32}}>
-        <button onClick={() => scenario && setStep("topic")} disabled={!scenario} className="btn-gold" style={{width:"100%", justifyContent:"center"}}>
-          <span className="btn-text">Continuer →</span>
-        </button>
-      </div>
+      {blocked ? (
+        <div style={{
+          background:"rgba(10,10,15,0.95)", backdropFilter:"blur(12px)",
+          border:"1px solid rgba(201,168,76,0.3)",
+          padding:"48px 36px",
+          textAlign:"center",
+        }}>
+          <p className="ornament" style={{marginBottom:12}}>✦</p>
+          <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:"#f5f0e8", marginBottom:8}}>
+            Quota mensuel atteint
+          </p>
+          <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7, marginBottom:20}}>
+            Vous avez utilisé toutes vos simulations ce mois-ci.<br/>
+            Passez à un forfait supérieur pour continuer.
+          </p>
+          <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
+            <span className="btn-text">Voir les forfaits →</span>
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div style={{display:"flex", flexDirection:"column", gap:2}}>
+            {SCENARIOS.map(s => (
+              <button key={s.id} onClick={() => setScenario(s)}
+                style={{
+                  display:"flex", alignItems:"center", gap:24,
+                  padding:"24px 28px",
+                  border:`1px solid ${scenario?.id===s.id ? "rgba(201,168,76,0.5)" : "rgba(201,168,76,0.12)"}`,
+                  background: scenario?.id===s.id ? "rgba(201,168,76,0.04)" : "transparent",
+                  cursor:"pointer", textAlign:"left",
+                  transition:"all 0.3s",
+                }}
+                onMouseEnter={e => { if(scenario?.id!==s.id) { (e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.3)" }}}
+                onMouseLeave={e => { if(scenario?.id!==s.id) { (e.currentTarget as HTMLElement).style.borderColor="rgba(201,168,76,0.12)" }}}>
+                <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:300, color:"rgba(201,168,76,0.3)", width:32, flexShrink:0}}>{s.num}</span>
+                <div>
+                  <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:400, color:"#f5f0e8", marginBottom:4}}>{s.label}</p>
+                  <p style={{fontSize:11, color:"#6a6258", lineHeight:1.6, letterSpacing:"0.02em"}}>{s.sub}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+          <div style={{marginTop:32}}>
+            <button onClick={() => scenario && setStep("topic")} disabled={!scenario} className="btn-gold" style={{width:"100%", justifyContent:"center"}}>
+              <span className="btn-text">Continuer →</span>
+            </button>
+          </div>
+        </>
+      )}
     </main>
   )
 

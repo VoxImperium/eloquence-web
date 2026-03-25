@@ -4,12 +4,26 @@ import { createClient } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-const PLANS = [
+const FREE_PLAN = {
+  id:       "free",
+  label:    "Gratuit",
+  price:    "0",
+  features: [
+    "2 analyses vocales / mois",
+    "1 simulation / mois",
+    "20 sujets d'entraînement",
+    "1 analyse de discours / mois",
+    "Historique 7 jours",
+  ],
+  excluded: ["Cas pratiques juridiques", "Export PDF", "Thémis"],
+}
+
+const PAID_PLANS = [
   {
     id:       "etudiant",
     label:    "Étudiant",
-    price:    "5,99",
-    priceInt: 599,
+    price:    "7,99",
+    priceInt: 799,
     priceId:  "price_1TErXhH7DqnrXksXUUdfrtir",
     sub:      "Examens, concours, formations",
     note:     "Justificatif étudiant requis",
@@ -22,14 +36,14 @@ const PLANS = [
       "Plaidoirie juridique — Thémis",
       "Historique 30 jours",
     ],
-    excluded: ["Analyses illimitées", "Export PDF", "Accès API"],
+    excluded: ["Analyses illimitées", "Export PDF"],
     popular:  false,
   },
   {
     id:       "basique",
     label:    "Basique",
-    price:    "9,99",
-    priceInt: 999,
+    price:    "10,99",
+    priceInt: 1099,
     priceId:  "price_1TErXiH7DqnrXksXUOM5DerM",
     sub:      "Professionnels en développement",
     note:     null,
@@ -43,30 +57,8 @@ const PLANS = [
       "Export PDF des plaidoiries",
       "Historique complet",
     ],
-    excluded: ["Accès API", "Multi-utilisateurs", "Support dédié"],
-    popular:  true,
-  },
-  {
-    id:       "entreprise",
-    label:    "Entreprise",
-    price:    "19,99",
-    priceInt: 1999,
-    priceId:  "price_1TErXiH7DqnrXksXqCVknpFH",
-    sub:      "Cabinets, équipes, grandes écoles",
-    note:     "Facturation annuelle : 2 mois offerts",
-    features: [
-      "Tout l'offre Basique",
-      "Cas pratiques juridiques illimités",
-      "Accès API complet",
-      "Tableau de bord équipe",
-      "Gestion multi-utilisateurs",
-      "Intégration PISTE / Légifrance",
-      "Rapports de progression équipe",
-      "Support prioritaire 24h",
-      "Formation onboarding incluse",
-    ],
     excluded: [],
-    popular:  false,
+    popular:  true,
   },
 ]
 
@@ -75,7 +67,7 @@ export default function PricingPage() {
   const supabase = createClient()
   const router   = useRouter()
 
-  const upgrade = async (plan: typeof PLANS[0]) => {
+  const upgrade = async (plan: typeof PAID_PLANS[0]) => {
     setLoading(plan.id)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -112,8 +104,46 @@ export default function PricingPage() {
         <p style={{fontSize:13, color:"#6a6258", lineHeight:1.9}}>Sans engagement · Résiliation à tout moment · Paiement sécurisé Stripe</p>
       </div>
 
+      {/* Plan Gratuit — pleine largeur */}
+      <div style={{
+        border: "1px solid rgba(201,168,76,0.12)",
+        padding: "32px 40px",
+        marginBottom: 32,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 32,
+        flexWrap: "wrap",
+      }}>
+        <div>
+          <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase", color:"#6a6258", marginBottom:8}}>
+            {FREE_PLAN.label}
+          </p>
+          <div style={{display:"flex", alignItems:"baseline", gap:6, marginBottom:8}}>
+            <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:40, fontWeight:300, color:"#f5f0e8"}}>Gratuit</span>
+            <span style={{fontSize:12, color:"#6a6258"}}>— inscription obligatoire</span>
+          </div>
+          <div style={{display:"flex", flexWrap:"wrap", gap:"8px 24px", marginTop:8}}>
+            {FREE_PLAN.features.map((f,i) => (
+              <span key={i} style={{fontSize:12, color:"#8a8070", display:"flex", alignItems:"center", gap:6}}>
+                <span style={{color:"rgba(201,168,76,0.4)"}}>◆</span>{f}
+              </span>
+            ))}
+            {FREE_PLAN.excluded.map((f,i) => (
+              <span key={i} style={{fontSize:12, color:"#3a3830", display:"flex", alignItems:"center", gap:6}}>
+                <span>—</span>{f}
+              </span>
+            ))}
+          </div>
+        </div>
+        <Link href="/login" className="btn-outline" style={{flexShrink:0, whiteSpace:"nowrap"}}>
+          <span>Commencer gratuitement →</span>
+        </Link>
+      </div>
+
+      {/* Plans payants — 3 colonnes */}
       <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginBottom:48}}>
-        {PLANS.map(plan => (
+        {PAID_PLANS.map(plan => (
           <div key={plan.id} style={{
             border: plan.popular ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(201,168,76,0.15)",
             padding:"40px 32px",
@@ -173,7 +203,7 @@ export default function PricingPage() {
 
       <div style={{textAlign:"center", marginTop:48}}>
         <p style={{fontSize:12, color:"#6a6258", lineHeight:2}}>
-          Toutes les offres incluent l&apos;accès à Éloquence de Thémis — notre moteur de plaidoirie juridique.<br/>
+          Les offres Étudiant et Basique incluent l&apos;accès à Éloquence de Thémis — notre moteur de plaidoirie juridique.<br/>
           Paiement sécurisé par Stripe · TVA incluse · Annulation à tout moment depuis votre espace personnel.
         </p>
         <div style={{display:"flex", justifyContent:"center", gap:32, marginTop:24}}>

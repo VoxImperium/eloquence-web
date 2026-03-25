@@ -1,5 +1,8 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase"
+import { getPlanLimits, getUsage, incrementUsage, isFeatureBlocked } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const DOMAINES = [
@@ -31,7 +34,22 @@ export default function LegifrangePage() {
   const [inputMode,   setInputMode]   = useState<"text"|"pdf">("text")
   const [pdfName,     setPdfName]     = useState("")
   const [pdfInfo,     setPdfInfo]     = useState<any>(null)
+  const [userId,      setUserId]      = useState<string|null>(null)
+  const [plan,        setPlan]        = useState<string|null>(null)
+  const [used,        setUsed]        = useState(0)
   const fileRef = useRef<HTMLInputElement>(null)
+  const router   = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push("/login?redirect=/legifrance"); return }
+      setUserId(user.id)
+      setUsed(getUsage(user.id, "juridique"))
+      supabase.from("profiles").select("plan").eq("id", user.id).single()
+        .then(({ data }) => setPlan(data?.plan ?? null))
+    })
+  }, [])
 
   const handlePdf = async (file: File) => {
     if (!file) return
@@ -76,6 +94,7 @@ export default function LegifrangePage() {
         body: JSON.stringify({faits, domaine, position}),
       })
       const data = await res.json()
+      if (userId) { incrementUsage(userId, "juridique"); setUsed(u => u + 1) }
       setResult(data); setTab("plaidoirie")
     } catch { alert("Erreur lors de l'analyse") }
     clearInterval(iv); setLoading(false)
@@ -97,14 +116,29 @@ export default function LegifrangePage() {
     })
   }
 
+  const limits   = getPlanLimits(plan)
+  const jurLimit = limits.juridique
+  const planBlocked = isFeatureBlocked(plan, "juridique")
+  const quotaMax = jurLimit === Infinity ? null : jurLimit === 0 ? 0 : jurLimit
+  const quotaBlocked = !planBlocked && quotaMax !== null && used >= quotaMax
+
   return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:960, margin:"0 auto"}}>
 
       {/* Header */}
       <div style={{marginBottom:48}}>
         <Link href="/" style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:"#6a6258",textDecoration:"none"}}>← Retour</Link>
-        <div style={{marginTop:20,marginBottom:16}}>
+        <div style={{marginTop:20,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:"0.3em",textTransform:"uppercase",color:"#c9a84c"}}>Plaidoirie juridique</span>
+          {!planBlocked && quotaMax !== null && (
+            <span style={{
+              fontSize:10, letterSpacing:"0.1em", color: quotaBlocked ? "#c97a4c" : "#6a6258",
+              border:`1px solid ${quotaBlocked ? "rgba(201,120,76,0.3)" : "rgba(201,168,76,0.15)"}`,
+              padding:"3px 10px",
+            }}>
+              {used} / {quotaMax} cas ce mois
+            </span>
+          )}
         </div>
         <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(36px,5vw,56px)",fontWeight:300,lineHeight:1.1}}>
           Résolution de <em style={{color:"#c9a84c"}}>cas pratiques</em>
@@ -115,6 +149,54 @@ export default function LegifrangePage() {
       </div>
 
       <div style={{height:1,background:"linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)",marginBottom:40}}/>
+
+      {/* Overlay — plan ne permet pas l'accès */}
+      {planBlocked && (
+        <div style={{
+          background:"rgba(10,10,15,0.95)", backdropFilter:"blur(12px)",
+          border:"1px solid rgba(201,168,76,0.3)",
+          padding:"64px 48px",
+          textAlign:"center",
+          marginBottom: 40,
+        }}>
+          <p className="ornament" style={{marginBottom:16}}>✦</p>
+          <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:300, color:"#f5f0e8", marginBottom:12}}>
+            Cette fonctionnalité nécessite le forfait Étudiant ou Basique
+          </h2>
+          <p style={{fontSize:13, color:"#6a6258", lineHeight:1.9, marginBottom:32, maxWidth:480, margin:"0 auto 32px"}}>
+            Les cas pratiques juridiques avec Thémis sont disponibles à partir du forfait Étudiant.<br/>
+            Inscrivez-vous dès maintenant pour débloquer la plaidoirie par IA.
+          </p>
+          <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
+            <span className="btn-text">Voir les forfaits →</span>
+          </Link>
+        </div>
+      )}
+
+      {/* Overlay — quota atteint */}
+      {quotaBlocked && (
+        <div style={{
+          background:"rgba(10,10,15,0.95)", backdropFilter:"blur(12px)",
+          border:"1px solid rgba(201,168,76,0.3)",
+          padding:"48px 36px",
+          textAlign:"center",
+          marginBottom: 40,
+        }}>
+          <p className="ornament" style={{marginBottom:12}}>✦</p>
+          <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:"#f5f0e8", marginBottom:8}}>
+            Quota mensuel atteint
+          </p>
+          <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7, marginBottom:20}}>
+            Vous avez utilisé tous vos cas pratiques ce mois-ci.<br/>
+            Passez au forfait Basique pour 20 cas / mois.
+          </p>
+          <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
+            <span className="btn-text">Voir les forfaits →</span>
+          </Link>
+        </div>
+      )}
+
+      {!planBlocked && !quotaBlocked && (<>
 
       {/* Domaine */}
       <div style={{marginBottom:20}}>
@@ -364,6 +446,7 @@ export default function LegifrangePage() {
         @keyframes sweepAnim{0%{transform:translateX(-200%)}100%{transform:translateX(300%)}}
         @keyframes spin{to{transform:rotate(360deg)}}
       `}</style>
+      </>)}
     </main>
   )
 }
