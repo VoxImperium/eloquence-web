@@ -1,14 +1,9 @@
-"use client"
+use client
 import { useEffect, useState } from "react"
-import { Menu } from "lucide-react"
 import { createClient } from "@/lib/supabase"
 import Link from "next/link"
 
-interface NavProps {
-  onMobileMenuToggle?: () => void
-}
-
-export default function Nav({ onMobileMenuToggle }: NavProps = {}) {
+export default function Nav() {
   const [user,     setUser]     = useState(null)
   const [scrolled, setScrolled] = useState(false)
   const supabase = createClient()
@@ -31,7 +26,6 @@ export default function Nav({ onMobileMenuToggle }: NavProps = {}) {
       backdropFilter: scrolled ? "blur(20px)" : "none",
       transition:"all 0.4s",
     }}>
-      {/* Logo */}
       <Link href="/" style={{display:"flex", alignItems:"center", gap:14, textDecoration:"none"}}>
         <div style={{
           width:36, height:36,
@@ -51,14 +45,13 @@ export default function Nav({ onMobileMenuToggle }: NavProps = {}) {
         </span>
       </Link>
 
-      {/* Links */}
       <div style={{display:"flex", gap:36}}>
         {[
           ["/record",          "Analyser"],
           ["/simulate",        "Simulation"],
           ["/training",        "Entraînement"],
-          ["/speech-analysis",
-  "Discours"],
+          ["/speech-analysis", "Discours"],
+          ["/pricing",         "Tarifs"],
         ].map(([href, label]) => (
           <Link key={href} href={href} style={{
             fontFamily:"'Raleway',sans-serif",
@@ -73,7 +66,6 @@ export default function Nav({ onMobileMenuToggle }: NavProps = {}) {
         ))}
       </div>
 
-      {/* CTA */}
       <div style={{display:"flex", alignItems:"center", gap:20}}>
         {user ? (
           <Link href="/dashboard" className="btn-gold"><span className="btn-text">Mon espace</span></Link>
