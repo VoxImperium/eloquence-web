@@ -12,14 +12,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use admin SDK to create user with email already confirmed so Supabase
-    // does NOT send its own confirmation email — only Brevo will send one.
+    // Use admin SDK to create user without email confirmation so Supabase
+    // does NOT send its own confirmation email — Brevo sends the welcome email
+    // with a JWT-based confirmation link instead.
     const supabaseAdmin = createServiceClient()
 
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,
+      email_confirm: false,
       user_metadata: {
         full_name: prenom || "",
         phone: phone || "",
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
           email: user.email || "",
           prenom: prenom || user.user_metadata?.full_name || "",
           phone: phone || "",
+          userId: user.id,
           plan: "free",
         }),
       })
