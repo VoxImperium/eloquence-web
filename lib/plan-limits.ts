@@ -1,7 +1,7 @@
 export const PLAN_LIMITS = {
-  free:     { vocal: 2,        simulations: 1,        training: 20,  discourse: 1,        juridique: 0,  pdf: false, themis: false },
-  etudiant: { vocal: 10,       simulations: 3,        training: 100, discourse: 4,        juridique: 5,  pdf: false, themis: true  },
-  basique:  { vocal: Infinity, simulations: Infinity, training: 500, discourse: Infinity, juridique: 20, pdf: true,  themis: true  },
+  free:     { vocal: 2,        simulations: 1,        training: 20,       discourse: 1,        juridique: 0,        pdf: false, themis: false },
+  basique:  { vocal: 10,       simulations: 5,        training: 200,      discourse: 5,        juridique: 10,       pdf: false, themis: true  },
+  illimite: { vocal: Infinity, simulations: Infinity, training: Infinity, discourse: Infinity, juridique: Infinity, pdf: true,  themis: true  },
 }
 
 export type PlanKey = keyof typeof PLAN_LIMITS
@@ -46,7 +46,7 @@ export function isQuotaReached(plan: string | null | undefined, feature: Feature
 }
 
 export function planLabel(plan: string | null | undefined): string {
-  if (plan === "etudiant") return "Étudiant"
-  if (plan === "basique") return "Basique"
+  if (plan === "basique")  return "Basique"
+  if (plan === "illimite") return "Illimité"
   return "Gratuit"
 }

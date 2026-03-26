@@ -20,19 +20,19 @@ const FREE_PLAN = {
 
 const PAID_PLANS = [
   {
-    id:       "etudiant",
-    label:    "Étudiant",
+    id:       "basique",
+    label:    "Basique",
     price:    "7,99",
     priceInt: 799,
-    priceId:  "price_1TErXhH7DqnrXksXUUdfrtir",
-    sub:      "Examens, concours, formations",
-    note:     "Justificatif étudiant requis",
+    priceId:  process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIQUE ?? "",
+    sub:      "Pour progresser régulièrement",
+    note:     null,
     features: [
       "10 analyses vocales / mois",
-      "3 simulations / mois",
-      "100 sujets d'entraînement",
-      "4 analyses de discours / mois",
-      "5 cas pratiques juridiques / mois",
+      "5 simulations / mois",
+      "200 sujets d'entraînement",
+      "5 analyses de discours / mois",
+      "10 cas pratiques juridiques / mois",
       "Plaidoirie juridique — Thémis",
       "Historique 30 jours",
     ],
@@ -40,19 +40,19 @@ const PAID_PLANS = [
     popular:  false,
   },
   {
-    id:       "basique",
-    label:    "Basique",
-    price:    "10,99",
-    priceInt: 1099,
-    priceId:  "price_1TErXiH7DqnrXksXUOM5DerM",
-    sub:      "Professionnels en développement",
+    id:       "illimite",
+    label:    "Illimité",
+    price:    "15,99",
+    priceInt: 1599,
+    priceId:  process.env.NEXT_PUBLIC_STRIPE_PRICE_ILLIMITE ?? "",
+    sub:      "Tout illimité, sans restriction",
     note:     null,
     features: [
       "Analyses vocales illimitées",
       "Simulations illimitées",
-      "500 sujets d'entraînement",
+      "Sujets d'entraînement illimités",
       "Analyses de discours illimitées",
-      "20 cas pratiques juridiques / mois",
+      "Cas pratiques juridiques illimités",
       "Plaidoirie juridique — Thémis",
       "Export PDF des plaidoiries",
       "Historique complet",
@@ -203,7 +203,7 @@ export default function PricingPage() {
 
       <div style={{textAlign:"center", marginTop:48}}>
         <p style={{fontSize:12, color:"#6a6258", lineHeight:2}}>
-          Les offres Étudiant et Basique incluent l&apos;accès à Éloquence de Thémis — notre moteur de plaidoirie juridique.<br/>
+          Les offres Basique et Illimité incluent l&apos;accès à Thémis — notre moteur de plaidoirie juridique.<br/>
           Paiement sécurisé par Stripe · TVA incluse · Annulation à tout moment depuis votre espace personnel.
         </p>
         <div style={{display:"flex", justifyContent:"center", gap:32, marginTop:24}}>

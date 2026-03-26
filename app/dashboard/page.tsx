@@ -46,13 +46,13 @@ export default function DashboardPage() {
         </div>
         <div style={{display:"flex", alignItems:"center", gap:20}}>
           <div style={{
-            border:`1px solid ${(profile?.plan === "etudiant" || profile?.plan === "basique") ? "rgba(201,168,76,0.5)" : "rgba(201,168,76,0.15)"}`,
+            border:`1px solid ${(profile?.plan === "basique" || profile?.plan === "illimite") ? "rgba(201,168,76,0.5)" : "rgba(201,168,76,0.15)"}`,
             padding:"6px 16px",
             fontFamily:"'Raleway',sans-serif",
             fontSize:10, letterSpacing:"0.25em", textTransform:"uppercase",
-            color: (profile?.plan === "etudiant" || profile?.plan === "basique") ? "#c9a84c" : "#6a6258",
+            color: (profile?.plan === "basique" || profile?.plan === "illimite") ? "#c9a84c" : "#6a6258",
           }}>
-            {profile?.plan === "etudiant" ? "Étudiant" : profile?.plan === "basique" ? "Basique" : "Gratuit"}
+            {profile?.plan === "illimite" ? "Illimité" : profile?.plan === "basique" ? "Basique" : "Gratuit"}
           </div>
           <button onClick={logout} className="btn-ghost" style={{fontSize:10}}>Déconnexion</button>
         </div>
@@ -61,7 +61,7 @@ export default function DashboardPage() {
       <div style={{height:1, background:"linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)", marginBottom:48}}/>
 
       {/* CTA upgrade */}
-      {profile?.plan !== "basique" && (
+      {profile?.plan !== "illimite" && (
         <div style={{
           border:"1px solid rgba(201,168,76,0.25)",
           padding:"28px 36px",
@@ -70,14 +70,14 @@ export default function DashboardPage() {
           background:"rgba(201,168,76,0.02)",
         }}>
           <div>
-            {profile?.plan === "etudiant" ? (
+            {profile?.plan === "basique" ? (
               <>
-                <h3 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:400, marginBottom:6}}>Passez au Basique pour tout débloquer</h3>
-                <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7}}>Analyses illimitées · Export PDF · Cas juridiques étendus</p>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:400, marginBottom:6}}>Passez à l&apos;Illimité pour tout débloquer</h3>
+                <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7}}>Analyses illimitées · Export PDF · Cas juridiques illimités</p>
               </>
             ) : (
               <>
-                <h3 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:400, marginBottom:6}}>Passez à l&apos;Étudiant ou Basique</h3>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:400, marginBottom:6}}>Passez au Basique ou à l&apos;Illimité</h3>
                 <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7}}>Débloquez toutes les fonctionnalités · Simulations · Cas pratiques</p>
               </>
             )}
