@@ -1,5 +1,5 @@
 "use client"
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { createClient } from "@/lib/supabase"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -20,6 +20,15 @@ function LoginForm() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const redirectTo   = searchParams.get("redirect") || "/dashboard"
+  const confirmedParam = searchParams.get("confirmed")
+  const confirmedEmail = searchParams.get("email")
+
+  // Pre-fill email if coming from email confirmation redirect
+  useEffect(() => {
+    if (confirmedEmail) {
+      setEmail(decodeURIComponent(confirmedEmail))
+    }
+  }, [confirmedEmail])
 
   const handleSubmit = async () => {
     setError(""); setLoading(true)
@@ -138,6 +147,15 @@ function LoginForm() {
                 className="input-oratoire"
                 placeholder="+33 6 00 00 00 00"
               />
+            </div>
+          )}
+
+          {confirmedParam === "true" && (
+            <div style={{padding:"12px 16px", border:"1px solid rgba(201,168,76,0.3)", background:"rgba(201,168,76,0.06)", marginBottom:24}}>
+              <p style={{fontSize:12, color:"#c9a84c", letterSpacing:"0.03em"}}>
+                ✓ Email confirmé ! Vous pouvez maintenant vous connecter.
+                {confirmedEmail && <span style={{display:"block", marginTop:4, color:"#b0a898"}}>{confirmedEmail}</span>}
+              </p>
             </div>
           )}
 

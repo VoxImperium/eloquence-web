@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServiceClient } from "@/lib/supabase"
+import jwt from "jsonwebtoken"
 
-async function getConfirmationLink(email: string): Promise<string | null> {
+async function getConfirmationLink(email: string, userId: string): Promise<string | null> {
   try {
-    const supabaseAdmin = createServiceClient()
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.xn--loquence-90a.fr"
-    // Generate a magic-link that confirms the user's email and logs them in on first click
-    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-      options: {
-        redirectTo: `${siteUrl}/auth/callback?next=/dashboard`,
-      },
-    })
-    if (error || !data?.properties?.action_link) {
-      console.warn("Could not generate confirmation link:", error?.message)
+    const jwtSecret = process.env.JWT_SECRET
+    if (!jwtSecret) {
+      console.error("JWT_SECRET environment variable is not set")
       return null
     }
-    return data.properties.action_link
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.xn--loquence-90a.fr"
+    // Generate a JWT for email confirmation (valid 24h)
+    const token = jwt.sign(
+      { user_id: userId, email },
+      jwtSecret,
+      { expiresIn: "24h" }
+    )
+    return `${siteUrl}/api/auth/confirm-email?token=${token}`
   } catch (e) {
     console.warn("getConfirmationLink error:", e)
     return null
@@ -232,15 +230,15 @@ function buildWelcomeEmail(prenom: string, email: string, confirmationLink: stri
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, prenom, phone, skipConfirmation } = await req.json()
+    const { email, prenom, phone, skipConfirmation, userId } = await req.json()
     const apiKey = process.env.BREVO_API_KEY
     if (!apiKey) return NextResponse.json({ ok: false, error: "Missing API key" }, { status: 500 })
 
-    // Generate a Supabase confirmation link unless the caller explicitly opts out
+    // Generate a JWT confirmation link unless the caller explicitly opts out
     // (e.g. for Google OAuth users whose email is already confirmed)
     let confirmationLink: string | null = null
-    if (!skipConfirmation) {
-      confirmationLink = await getConfirmationLink(email)
+    if (!skipConfirmation && userId) {
+      confirmationLink = await getConfirmationLink(email, userId)
     }
 
     const emailHtml = buildWelcomeEmail(prenom || "", email, confirmationLink)
