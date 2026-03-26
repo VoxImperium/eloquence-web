@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
-import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
+import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const CONTEXTS = [
@@ -34,7 +34,7 @@ export default function RecordPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/record"); return }
       setUserId(user.id)
-      setUsed(getUsage(user.id, "vocal"))
+      fetchUsage("vocal").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
     })
@@ -93,7 +93,7 @@ export default function RecordPage() {
       const res = await fetch("/api/backend/analyze", { method: "POST", body: form })
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
-      if (userId) { incrementUsage(userId, "vocal"); setUsed(u => u + 1) }
+      if (userId) trackUsage("vocal").then(setUsed).catch(() => {})
       sessionStorage.setItem("lastResult", JSON.stringify(data))
       router.push("/results")
     } catch (e: any) {

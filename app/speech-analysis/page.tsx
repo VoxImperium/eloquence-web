@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
-import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
+import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const CONTEXTS = [
@@ -43,7 +43,7 @@ export default function SpeechAnalysisPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/speech-analysis"); return }
       setUserId(user.id)
-      setUsed(getUsage(user.id, "discourse"))
+      fetchUsage("discourse").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
     })
@@ -67,7 +67,7 @@ export default function SpeechAnalysisPage() {
         body: JSON.stringify({text, context}),
       })
       const data = await res.json()
-      if (userId) { incrementUsage(userId, "discourse"); setUsed(u => u + 1) }
+      if (userId) { trackUsage("discourse").then(setUsed).catch(() => {}) }
       setResult(data); setTab("tirade")
     } catch { alert("Erreur lors de l'analyse") }
     clearInterval(iv); setLoading(false)
@@ -88,7 +88,7 @@ export default function SpeechAnalysisPage() {
         const res = await fetch("/api/backend/speech/analyze-audio", {method: "POST", body: form})
         const data = await res.json()
         if (data.transcript) setText(data.transcript)
-        if (userId) { incrementUsage(userId, "discourse"); setUsed(u => u + 1) }
+        if (userId) { trackUsage("discourse").then(setUsed).catch(() => {}) }
         setResult(data); setTab("tirade"); setLoading(false)
       }
       mr.start(); mrRef.current = mr; setRecording(true)

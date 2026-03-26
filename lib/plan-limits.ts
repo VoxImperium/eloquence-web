@@ -19,29 +19,37 @@ export function isFeatureBlocked(plan: string | null | undefined, feature: Featu
   return limit === 0
 }
 
-function usageKey(userId: string, feature: string): string {
-  const now = new Date()
-  return `eloquence_usage_${userId}_${feature}_${now.getFullYear()}_${now.getMonth()}`
+export async function fetchUsage(feature: string): Promise<number> {
+  try {
+    const res = await fetch(`/api/backend/payments/usage?feature=${encodeURIComponent(feature)}`)
+    if (!res.ok) return 0
+    const data = await res.json()
+    return data.used ?? 0
+  } catch {
+    return 0
+  }
 }
 
-export function getUsage(userId: string, feature: string): number {
-  if (typeof window === "undefined") return 0
-  return parseInt(localStorage.getItem(usageKey(userId, feature)) || "0", 10)
+export async function trackUsage(feature: string): Promise<number> {
+  try {
+    const res = await fetch("/api/backend/payments/usage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ feature }),
+    })
+    if (!res.ok) return 0
+    const data = await res.json()
+    return data.used ?? 0
+  } catch {
+    return 0
+  }
 }
 
-export function incrementUsage(userId: string, feature: string): void {
-  if (typeof window === "undefined") return
-  const key = usageKey(userId, feature)
-  const current = parseInt(localStorage.getItem(key) || "0", 10)
-  localStorage.setItem(key, String(current + 1))
-}
-
-export function isQuotaReached(plan: string | null | undefined, feature: FeatureKey, userId: string): boolean {
+export function isQuotaReached(plan: string | null | undefined, feature: FeatureKey, used: number): boolean {
   const limits = getPlanLimits(plan)
   const limit = limits[feature]
   if (typeof limit === "boolean") return false
   if (limit === Infinity) return false
-  const used = getUsage(userId, feature)
   return used >= limit
 }
 

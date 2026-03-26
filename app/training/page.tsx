@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
-import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
+import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const CATS = ["Philosophie","Société & Politique","Technologie & IA","Environnement & Écologie","Éducation & Culture","Économie & Travail","Éthique & Bioéthique","Justice & Droit","Relations internationales","Identité & Société","Psychologie & Bien-être"]
@@ -30,7 +30,7 @@ export default function TrainingPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/training"); return }
       setUserId(user.id)
-      setUsed(getUsage(user.id, "training"))
+      fetchUsage("training").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
     })
@@ -41,7 +41,7 @@ export default function TrainingPage() {
   useEffect(() => { endRef.current?.scrollIntoView({behavior:"smooth"}) }, [messages])
 
   const start = async (t: any) => {
-    if (userId) { incrementUsage(userId, "training"); setUsed(u => u + 1) }
+    if (userId) trackUsage("training").then(setUsed).catch(() => {})
     setSelected(t); setStep("chat"); setLoading(true)
     const res = await fetch("/api/backend/training/message", {
       method:"POST", headers:{"Content-Type":"application/json"},

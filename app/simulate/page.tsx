@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
-import { getPlanLimits, getUsage, incrementUsage } from "@/lib/plan-limits"
+import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const SCENARIOS = [
@@ -36,7 +36,7 @@ export default function SimulatePage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/simulate"); return }
       setUserId(user.id)
-      setUsed(getUsage(user.id, "simulations"))
+      fetchUsage("simulations").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
     })
@@ -51,7 +51,7 @@ export default function SimulatePage() {
       body:JSON.stringify({scenario:scenario.id, messages:[], user_input:`Bonjour, je suis prêt. ${topic ? "Sujet : "+topic : ""}`, topic})
     })
     const data = await res.json()
-    if (userId) { incrementUsage(userId, "simulations"); setUsed(u => u + 1) }
+    if (userId) trackUsage("simulations").then(setUsed).catch(() => {})
     setMessages([{role:"assistant", content:data.response, name:data.persona_name}])
     setLoading(false)
   }
