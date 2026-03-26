@@ -64,14 +64,21 @@ const PAID_PLANS = [
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<string|null>(null)
+  const [error, setError] = useState<string|null>(null)
   const supabase = createClient()
   const router   = useRouter()
 
   const upgrade = async (plan: typeof PAID_PLANS[0]) => {
     setLoading(plan.id)
+    setError(null)
     try {
+      if (!plan.priceId) {
+        setError("Prix non configuré. Contactez le support.")
+        return
+      }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push("/login"); return }
+      console.log("[checkout] priceId =", plan.priceId)
       const res = await fetch("/api/backend/payments/create-checkout", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -84,9 +91,19 @@ export default function PricingPage() {
         }),
       })
       const data = await res.json()
+      console.log("[checkout] response =", data)
+      if (!res.ok || data.error) {
+        setError(data.error ?? "Erreur lors de la création du paiement.")
+        return
+      }
       if (data.checkout_url) window.location.href = data.checkout_url
-    } catch(e) { console.error(e) }
-    finally { setLoading(null) }
+      else setError("URL de paiement manquante.")
+    } catch(e: any) {
+      console.error(e)
+      setError(e.message || "Une erreur est survenue.")
+    } finally {
+      setLoading(null)
+    }
   }
 
   return (
@@ -103,6 +120,20 @@ export default function PricingPage() {
         </h1>
         <p style={{fontSize:13, color:"#6a6258", lineHeight:1.9}}>Sans engagement · Résiliation à tout moment · Paiement sécurisé Stripe</p>
       </div>
+
+      {error && (
+        <div style={{
+          border: "1px solid rgba(201,80,76,0.4)",
+          background: "rgba(201,80,76,0.06)",
+          padding: "12px 20px",
+          marginBottom: 24,
+          fontSize: 13,
+          color: "#c97a4c",
+          letterSpacing: "0.02em",
+        }}>
+          ⚠ {error}
+        </div>
+      )}
 
       {/* Plan Gratuit — pleine largeur */}
       <div style={{
