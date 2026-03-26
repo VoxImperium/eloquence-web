@@ -356,3 +356,60 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
 }
+
+
+/* === SIDEBAR === */
+
+/* Desktop : sidebar always visible, no transform */
+.sidebar-panel {
+  transform: translateX(0);
+}
+
+/* Desktop : hide mobile FAB */
+.sidebar-mobile-fab {
+  display: none !important;
+}
+
+/* Desktop : show toggle button */
+.sidebar-toggle-btn {
+  display: flex;
+}
+
+/* Mobile : sidebar hidden by default, slides in when open */
+@media (max-width: 768px) {
+  .sidebar-panel {
+    transform: translateX(-100%);
+    width: 256px !important; /* always full width on mobile */
+  }
+
+  .sidebar-panel.sidebar-mobile-open {
+    transform: translateX(0);
+  }
+
+  /* No margin on mobile — content takes full width */
+  .app-content {
+    margin-left: 0 !important;
+  }
+
+  /* Show FAB on mobile */
+  .sidebar-mobile-fab {
+    display: flex !important;
+  }
+
+  /* Hide desktop toggle on mobile */
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  /* Nav: reduce padding on mobile */
+  nav {
+    padding: 0 20px !important;
+  }
+}
+
+/* Tablet (768px - 1024px): sidebar visible, FAB hidden */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar-mobile-fab {
+    display: none !important;
+  }
+}
