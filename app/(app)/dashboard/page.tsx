@@ -27,6 +27,11 @@ export default function DashboardPage() {
   const [pwdMsg,      setPwdMsg]      = useState<{type:"success"|"error", text:string}|null>(null)
   const [pwdLoading,  setPwdLoading]  = useState(false)
 
+  // Cancel subscription state
+  const [cancelStep,     setCancelStep]     = useState<0|1>(0) // 0=closed, 1=confirm
+  const [cancelMsg,      setCancelMsg]      = useState<{type:"success"|"error", text:string}|null>(null)
+  const [cancelLoading,  setCancelLoading]  = useState(false)
+
   // Delete account state
   const [deleteStep,     setDeleteStep]     = useState<0|1|2>(0) // 0=closed, 1=confirm, 2=enter pwd
   const [deletePassword, setDeletePassword] = useState("")
@@ -114,6 +119,37 @@ export default function DashboardPage() {
       setNewPassword("")
       setConfirmPwd("")
     }
+  }
+
+  const cancelSubscription = async () => {
+    setCancelMsg(null)
+    setCancelLoading(true)
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      setCancelLoading(false)
+      setCancelMsg({ type: "error", text: "Impossible de récupérer la session. Réessayez." })
+      return
+    }
+
+    const res = await fetch("/api/user/cancel-subscription", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${session.access_token}` },
+    })
+
+    const data = await res.json()
+    setCancelLoading(false)
+
+    if (!res.ok || !data.ok) {
+      setCancelMsg({ type: "error", text: data.error || "Erreur lors de la résiliation." })
+      return
+    }
+
+    setCancelMsg({ type: "success", text: data.message })
+    setCancelStep(0)
+    // Refresh profile to reflect plan change
+    const { data: updatedProfile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+    if (updatedProfile) setProfile(updatedProfile)
   }
 
   const deleteAccount = async () => {
@@ -525,6 +561,49 @@ export default function DashboardPage() {
               <p style={{fontSize:12, color: saveMsg.includes("Erreur") ? "#c97a4c" : "#c9a84c"}}>{saveMsg}</p>
             )}
           </div>
+
+          {/* ─── Abonnement ─── */}
+          {(profile?.plan === "basique" || profile?.plan === "illimite") && (
+            <>
+              <div style={{height:1, background:"rgba(201,168,76,0.15)", marginTop:40, marginBottom:32}}/>
+
+              <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#6a6258", marginBottom:20}}>
+                Mon abonnement
+              </p>
+
+              <div style={{border:"1px solid rgba(201,168,76,0.2)", padding:"20px 24px", background:"rgba(201,168,76,0.02)", marginBottom:16}}>
+                <p style={{fontSize:13, color:"#8a8070", lineHeight:1.7, marginBottom:0}}>
+                  Votre abonnement <strong style={{color:"#f5f0e8"}}>{profile?.plan === "illimite" ? "Illimité" : "Basique"}</strong> est actif. Vous pouvez le résilier à tout moment. L&apos;accès reste disponible jusqu&apos;à la fin de la période mensuelle en cours.
+                </p>
+              </div>
+
+              {cancelMsg && (
+                <p style={{fontSize:12, color: cancelMsg.type === "error" ? "#c97a4c" : "#c9a84c", marginBottom:16}}>
+                  {cancelMsg.text}
+                </p>
+              )}
+
+              <button
+                onClick={() => { setCancelStep(1); setCancelMsg(null) }}
+                style={{
+                  background:"transparent",
+                  border:"1px solid rgba(201,90,50,0.4)",
+                  color:"#c97a4c",
+                  padding:"10px 20px",
+                  fontFamily:"'Raleway',sans-serif",
+                  fontSize:10,
+                  letterSpacing:"0.2em",
+                  textTransform:"uppercase" as const,
+                  cursor:"pointer",
+                  transition:"all 0.3s",
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(201,90,50,0.08)" }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent" }}
+              >
+                Résilier mon abonnement
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -653,6 +732,68 @@ export default function DashboardPage() {
             >
               ⚠ Supprimer définitivement mon compte
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: RÉSILIATION D'ABONNEMENT ─── */}
+      {cancelStep === 1 && (
+        <div style={{
+          position:"fixed", inset:0, zIndex:1000,
+          background:"rgba(10,10,15,0.92)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          padding:"20px",
+        }}>
+          <div style={{
+            background:"#0d0d14",
+            border:"1px solid rgba(201,168,76,0.25)",
+            padding:"40px",
+            maxWidth:480,
+            width:"100%",
+          }}>
+            <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#c9a84c", marginBottom:20}}>
+              Confirmation requise
+            </p>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:300, color:"#f5f0e8", marginBottom:16, lineHeight:1.2}}>
+              Résilier votre abonnement ?
+            </h2>
+            <p style={{fontSize:13, color:"#8a8070", lineHeight:1.8, marginBottom:28}}>
+              Vous continuerez à avoir accès jusqu&apos;à la fin de votre période mensuelle en cours. Après cette date, votre compte basculera automatiquement en forfait gratuit. Aucun remboursement ne sera effectué pour la période déjà payée.
+            </p>
+            {cancelMsg && (
+              <p style={{fontSize:12, color: cancelMsg.type === "error" ? "#c97a4c" : "#c9a84c", marginBottom:16}}>
+                {cancelMsg.text}
+              </p>
+            )}
+            <div style={{display:"flex", gap:12}}>
+              <button
+                onClick={() => { setCancelStep(0); setCancelMsg(null) }}
+                disabled={cancelLoading}
+                style={{
+                  flex:1, padding:"12px", background:"transparent",
+                  border:"1px solid rgba(201,168,76,0.25)",
+                  color:"#6a6258", fontSize:11, letterSpacing:"0.15em",
+                  textTransform:"uppercase" as const,
+                  fontFamily:"'Raleway',sans-serif", cursor:"pointer",
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={cancelSubscription}
+                disabled={cancelLoading}
+                style={{
+                  flex:1, padding:"12px", background:"rgba(201,90,50,0.1)",
+                  border:"1px solid rgba(201,90,50,0.4)",
+                  color:"#c97a4c", fontSize:11, letterSpacing:"0.15em",
+                  textTransform:"uppercase" as const,
+                  fontFamily:"'Raleway',sans-serif", cursor: cancelLoading ? "not-allowed" : "pointer",
+                  opacity: cancelLoading ? 0.6 : 1,
+                }}
+              >
+                {cancelLoading ? "Résiliation..." : "Confirmer la résiliation"}
+              </button>
+            </div>
           </div>
         </div>
       )}

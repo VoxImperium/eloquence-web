@@ -7,8 +7,24 @@ export async function POST(req: NextRequest) {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   const brevoApiKey = process.env.BREVO_API_KEY
 
-  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
-    return NextResponse.json({ ok: false, error: "Server configuration error" }, { status: 500 })
+  if (!supabaseUrl) {
+    console.error("[DELETE_ACCOUNT] Missing NEXT_PUBLIC_SUPABASE_URL")
+    return NextResponse.json({ ok: false, error: "Server configuration error - Missing Supabase URL" }, { status: 500 })
+  }
+
+  if (!supabaseAnonKey) {
+    console.error("[DELETE_ACCOUNT] Missing NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    return NextResponse.json({ ok: false, error: "Server configuration error - Missing Supabase anon key" }, { status: 500 })
+  }
+
+  if (!supabaseServiceKey) {
+    console.error("[DELETE_ACCOUNT] Missing SUPABASE_SERVICE_ROLE_KEY")
+    return NextResponse.json({ ok: false, error: "Server configuration error - Missing admin key" }, { status: 500 })
+  }
+
+  if (!brevoApiKey) {
+    console.error("[DELETE_ACCOUNT] Missing BREVO_API_KEY")
+    // Non-blocking: Brevo is best-effort, log but continue
   }
 
   // Authenticate user via Bearer token
