@@ -66,6 +66,7 @@ export default function PricingPage() {
   const [loading, setLoading] = useState<string|null>(null)
   const [error, setError] = useState<string|null>(null)
   const [user, setUser] = useState<any>(null)
+  const [cguAccepted, setCguAccepted] = useState(false)
   const supabase = createClient()
   const router   = useRouter()
 
@@ -222,11 +223,25 @@ export default function PricingPage() {
               <p style={{fontSize:10, color:"#6a6258", letterSpacing:"0.05em", marginBottom:16, lineHeight:1.6, borderTop:"1px solid rgba(201,168,76,0.1)", paddingTop:12}}>{plan.note}</p>
             )}
 
+            <label style={{display:"flex", alignItems:"flex-start", gap:10, marginBottom:16, cursor:"pointer"}}>
+              <input
+                type="checkbox"
+                checked={cguAccepted}
+                onChange={e => setCguAccepted(e.target.checked)}
+                style={{marginTop:2, accentColor:"#c9a84c", flexShrink:0, cursor:"pointer"}}
+              />
+              <span style={{fontSize:11, color:"#8a8070", lineHeight:1.6, letterSpacing:"0.02em"}}>
+                J&apos;accepte les{" "}
+                <Link href="/cgu" style={{color:"#c9a84c", textDecoration:"underline"}}>CGUV</Link>
+                {" "}et je reconnais que le service commence immédiatement. À ce titre, je renonce expressément à mon droit de rétractation.
+              </span>
+            </label>
+
             <button
               onClick={() => upgrade(plan)}
-              disabled={loading === plan.id}
+              disabled={loading === plan.id || !cguAccepted}
               className={plan.popular ? "btn-gold" : "btn-outline"}
-              style={{width:"100%", justifyContent:"center"}}
+              style={{width:"100%", justifyContent:"center", opacity: cguAccepted ? 1 : 0.4, cursor: cguAccepted ? "pointer" : "not-allowed"}}
             >
               {loading === plan.id
                 ? <><span className="spinner-gold"/><span className={plan.popular ? "btn-text" : ""}>Redirection...</span></>
