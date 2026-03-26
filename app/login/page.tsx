@@ -42,25 +42,22 @@ function LoginForm() {
         if (error) throw error
         router.push(safeRedirect)
       } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: undefined, // Désactiver email confirmation Supabase
-          },
-        })
-        if (error) throw error
-        // Email de bienvenue — fire-and-forget, ne bloque pas la navigation
-        fetch("/api/backend/emails/welcome", {
+        // Use custom endpoint with admin SDK so Supabase does NOT send
+        // its own confirmation email — only Brevo sends the welcome email.
+        const response = await fetch("/api/backend/auth/signup", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email: data.user?.email || "",
-            prenom: data.user?.user_metadata?.full_name || "",
+            email,
+            password,
+            prenom: "",
             phone: phone || "",
-            plan: "free"
-          })
-        }).catch(() => {})
+          }),
+        })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.error || "Signup failed")
+        }
         router.push("/signup-success")
       }
     } catch (e: any) { setError(e.message) }
