@@ -24,7 +24,7 @@ const PAID_PLANS = [
     label:    "Basique",
     price:    "7,99",
     priceInt: 799,
-    priceId:  process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIQUE ?? "",
+    priceId:  process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIQUE!,
     sub:      "Pour progresser régulièrement",
     note:     null,
     features: [
@@ -44,7 +44,7 @@ const PAID_PLANS = [
     label:    "Illimité",
     price:    "15,99",
     priceInt: 1599,
-    priceId:  process.env.NEXT_PUBLIC_STRIPE_PRICE_ILLIMITE ?? "",
+    priceId:  process.env.NEXT_PUBLIC_STRIPE_PRICE_ILLIMITE!,
     sub:      "Tout illimité, sans restriction",
     note:     null,
     features: [
