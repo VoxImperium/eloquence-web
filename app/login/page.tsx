@@ -55,7 +55,7 @@ function LoginForm() {
             plan: "free"
           })
         }).catch(() => {})
-        router.push(safeRedirect)
+        router.push("/signup-success")
       }
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
@@ -67,7 +67,7 @@ function LoginForm() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}${safeRedirect}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeRedirect)}`,
       },
     })
   }
