@@ -10,60 +10,48 @@ export default function CGUPage() {
           <span style={{ width: 36, height: 1, background: "linear-gradient(90deg,#c9a84c,transparent)", display: "block" }} />
         </div>
         <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(36px,5vw,56px)", fontWeight: 300, lineHeight: 1.1, marginBottom: 16 }}>
-          Conditions Générales <em style={{ color: "#c9a84c" }}>d&apos;Utilisation</em>
+          Conditions Générales <em style={{ color: "#c9a84c" }}>d&apos;Utilisation et de Vente</em>
         </h1>
-        <p style={{ fontSize: 12, color: "#6a6258" }}>Dernière mise à jour : mars 2026</p>
+        <p style={{ fontSize: 12, color: "#6a6258" }}>Dernière mise à jour : 26 mars 2026</p>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
         {[
           {
-            title: "1. Objet",
-            content: "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme Éloquence AI, accessible à l'adresse www.éloquence.fr, éditée par Éloquence AI. En créant un compte ou en utilisant nos services, vous acceptez sans réserve les présentes CGU."
+            title: "1. Objet et Acceptation",
+            content: "Les présentes CGUV régissent l'accès et l'utilisation de la plateforme Éloquence AI, accessible à l'adresse www.eloquence.fr. En créant un compte, l'utilisateur reconnaît avoir pris connaissance des présentes et les accepte sans réserve."
           },
           {
-            title: "2. Accès au service",
-            content: "L'accès à la plateforme nécessite la création d'un compte avec une adresse email valide. L'utilisateur s'engage à fournir des informations exactes et à maintenir la confidentialité de ses identifiants. Éloquence AI se réserve le droit de suspendre ou supprimer tout compte en cas d'utilisation frauduleuse ou contraire aux présentes CGU."
+            title: "2. Accès et Sécurité du Compte",
+            content: "L'accès nécessite la création d'un compte avec une adresse email valide. L'utilisateur est seul responsable de la confidentialité de ses identifiants. Éloquence AI se réserve le droit de suspendre tout compte en cas d'utilisation frauduleuse, de partage d'identifiants ou de comportement contraire aux présentes."
           },
           {
-            title: "3. Forfaits et abonnements",
-            content: "La plateforme propose un accès gratuit limité et des abonnements payants (Basique à 7,99€/mois, Illimité à 15,99€/mois). Les abonnements sont sans engagement et résiliables à tout moment depuis l'espace personnel. Le paiement est effectué mensuellement via Stripe. Aucun remboursement ne sera effectué pour la période en cours au moment de la résiliation."
+            title: "3. Conditions Financières et Abonnements",
+            content: "La plateforme propose deux formules d'abonnement : Forfait Basique à 7,99 € / mois (accès limité selon les quotas indiqués sur le site) et Forfait Illimité à 15,99 € / mois (accès sans restriction aux outils d'analyse). Les tarifs sont indiqués en euros TTC. Le règlement s'effectue via le prestataire sécurisé Stripe. Les abonnements sont sans engagement et résiliables à tout moment via l'espace personnel. Toute période mensuelle entamée est due ; aucun remboursement ne sera effectué pour le mois en cours."
           },
           {
-            title: "4. Utilisation acceptable",
-            content: "L'utilisateur s'engage à utiliser la plateforme Éloquence AI dans le respect des lois en vigueur et des présentes CGU. Il est interdit d'utiliser la plateforme à des fins illicites, de tenter d'en compromettre la sécurité ou d'en perturber le fonctionnement. Tout usage abusif pourra entraîner la suspension immédiate du compte."
+            title: "4. Droit de Rétractation (Service Numérique)",
+            content: "Conformément à l'article L221-28 du Code de la consommation, l'utilisateur accepte expressément que l'exécution du service commence immédiatement après le paiement. En conséquence, il renonce expressément à son droit de rétractation de 14 jours pour bénéficier de l'accès instantané aux outils d'IA."
           },
           {
-            title: "5. Propriété intellectuelle",
-            content: "L'ensemble des contenus présents sur la plateforme Éloquence AI (textes, images, algorithmes, code source, interface graphique, marque) est la propriété exclusive d'Éloquence AI et est protégé par les lois françaises et internationales relatives à la propriété intellectuelle. Toute reproduction, même partielle, est strictement interdite sans autorisation écrite préalable."
+            title: "5. Propriété Intellectuelle",
+            content: "La Plateforme : Les algorithmes, le code source, l'interface, les logos et la marque « Éloquence AI » sont la propriété exclusive de l'éditeur. Les Outputs (Résultats) : Éloquence AI concède à l'utilisateur une licence mondiale et non-exclusive d'utiliser les textes, analyses et suggestions générés par l'IA pour ses propres besoins. L'utilisateur reste seul propriétaire de ses discours originaux."
           },
           {
-            title: "6. Données personnelles",
-            content: "Éloquence AI collecte et traite des données personnelles conformément au Règlement Général sur la Protection des Données (RGPD). Les données collectées (email, prénom, numéro de téléphone optionnel, enregistrements audio temporaires) sont utilisées uniquement pour la fourniture du service. Elles ne sont jamais revendues à des tiers. Vous disposez d'un droit d'accès, de rectification et de suppression de vos données en nous contactant à eloquenceaii@gmail.com."
+            title: "6. Limitation de Responsabilité et Nature du Service",
+            content: "Assistance technique : Éloquence AI est un outil d'entraînement basé sur l'intelligence artificielle. Il peut comporter des erreurs ou des approximations. Absence de conseil juridique : L'outil ne constitue en aucun cas un conseil juridique ou professionnel. Éloquence AI n'est pas un cabinet d'avocats. L'utilisateur est seul responsable de la vérification de la véracité des propos suggérés. Responsabilité : L'éditeur ne pourra être tenu responsable d'un échec (concours, procès, examen) résultant de l'utilisation des recommandations de l'IA."
           },
           {
-            title: "7. Données audio",
-            content: "Les enregistrements audio transmis pour analyse sont traités en temps réel et ne sont pas stockés de manière permanente sur nos serveurs. Seuls les résultats d'analyse (scores, recommandations) sont conservés selon la durée prévue par votre forfait."
+            title: "7. Protection des Données et RGPD",
+            content: "Données : Email, prénom et enregistrements audio. Données Audio : Les fichiers audio sont traités pour l'analyse et supprimés de nos serveurs immédiatement après le traitement, sauf si l'utilisateur choisit explicitement de les sauvegarder dans son historique personnel. Droits : Vous disposez d'un droit d'accès, de rectification et de suppression via eloquenceaii@gmail.com."
           },
           {
-            title: "8. Limitation de responsabilité",
-            content: "Éloquence AI est un outil d'entraînement et d'amélioration oratoire. Les analyses et recommandations fournies sont indicatives et ne constituent pas un avis professionnel (médical, juridique ou autre). Éloquence AI ne saurait être tenu responsable des décisions prises sur la base des analyses produites par la plateforme."
+            title: "8. Disponibilité et Force Majeure",
+            content: "Éloquence AI s'efforce d'assurer une disponibilité 24h/24. Toutefois, l'accès peut être suspendu pour maintenance technique ou défaillance des serveurs tiers. Aucune indemnité ne sera due."
           },
           {
-            title: "9. Disponibilité du service",
-            content: "Éloquence AI s'efforce d'assurer une disponibilité maximale de la plateforme mais ne peut garantir un accès ininterrompu. Des interruptions pour maintenance ou en cas de force majeure peuvent survenir. Aucune indemnisation ne sera versée pour ces interruptions."
-          },
-          {
-            title: "10. Modification des CGU",
-            content: "Éloquence AI se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés par email de toute modification substantielle. La poursuite de l'utilisation du service après notification vaut acceptation des nouvelles CGU."
-          },
-          {
-            title: "11. Droit applicable",
-            content: "Les présentes CGU sont soumises au droit français. En cas de litige, et après tentative de résolution amiable, les tribunaux français seront seuls compétents."
-          },
-          {
-            title: "12. Contact",
-            content: "Pour toute question relative aux présentes CGU : eloquenceaii@gmail.com"
+            title: "9. Droit Applicable et Litiges",
+            content: "Les présentes sont soumises au droit français. En cas de litige, une solution amiable sera recherchée avant toute action devant les tribunaux compétents."
           },
         ].map((section, i) => (
           <div key={i}>
