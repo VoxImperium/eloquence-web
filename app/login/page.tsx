@@ -42,7 +42,13 @@ function LoginForm() {
         if (error) throw error
         router.push(safeRedirect)
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password })
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: undefined, // Désactiver email confirmation Supabase
+          },
+        })
         if (error) throw error
         // Email de bienvenue — fire-and-forget, ne bloque pas la navigation
         fetch("/api/backend/emails/welcome", {
