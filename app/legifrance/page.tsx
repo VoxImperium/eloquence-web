@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
-import { getPlanLimits, getUsage, incrementUsage, isFeatureBlocked } from "@/lib/plan-limits"
+import { getPlanLimits, fetchUsage, trackUsage, isFeatureBlocked } from "@/lib/plan-limits"
 import Link from "next/link"
 
 const DOMAINES = [
@@ -45,7 +45,7 @@ export default function LegifrangePage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/legifrance"); return }
       setUserId(user.id)
-      setUsed(getUsage(user.id, "juridique"))
+      fetchUsage("juridique").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
     })
@@ -94,7 +94,7 @@ export default function LegifrangePage() {
         body: JSON.stringify({faits, domaine, position}),
       })
       const data = await res.json()
-      if (userId) { incrementUsage(userId, "juridique"); setUsed(u => u + 1) }
+      if (userId) { trackUsage("juridique").then(setUsed).catch(() => {}) }
       setResult(data); setTab("plaidoirie")
     } catch { alert("Erreur lors de l'analyse") }
     clearInterval(iv); setLoading(false)
