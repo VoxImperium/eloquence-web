@@ -1,8 +1,63 @@
 import { NextRequest, NextResponse } from "next/server"
+import { createServiceClient } from "@/lib/supabase"
 
-function buildWelcomeEmail(prenom: string, email: string): string {
+async function getConfirmationLink(email: string): Promise<string | null> {
+  try {
+    const supabaseAdmin = createServiceClient()
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.xn--loquence-90a.fr"
+    // Generate a magic-link that confirms the user's email and logs them in on first click
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+      options: {
+        redirectTo: `${siteUrl}/auth/callback?next=/dashboard`,
+      },
+    })
+    if (error || !data?.properties?.action_link) {
+      console.warn("Could not generate confirmation link:", error?.message)
+      return null
+    }
+    return data.properties.action_link
+  } catch (e) {
+    console.warn("getConfirmationLink error:", e)
+    return null
+  }
+}
+
+function buildWelcomeEmail(prenom: string, email: string, confirmationLink: string | null): string {
   const prenomDisplay = prenom ? `, ${prenom}` : ""
   const year = new Date().getFullYear()
+
+  const confirmationSection = confirmationLink
+    ? `
+          <!-- Confirmation email section -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid rgba(201,168,76,0.4);background:rgba(201,168,76,0.06);margin-bottom:32px;">
+            <tr>
+              <td style="padding:28px 32px;">
+                <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#c9a84c;">Étape importante</p>
+                <h3 style="margin:0 0 12px;font-family:Georgia,serif;font-size:18px;font-weight:300;color:#f5f0e8;">Activez votre compte</h3>
+                <p style="margin:0 0 20px;font-size:13px;color:#b0a898;line-height:1.7;">
+                  Pour confirmer votre adresse email et accéder à votre espace, cliquez sur le bouton ci-dessous. Ce lien vous connecte directement à votre compte.
+                </p>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="background:#c9a84c;">
+                      <a href="${confirmationLink}"
+                         style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#0a0a0f;text-decoration:none;">
+                        ✓ Activer mon compte →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:16px 0 0;font-size:11px;color:#6a6258;line-height:1.6;">
+                  Ce lien expire dans 24h. Si vous n'avez pas créé de compte, ignorez cet email.
+                </p>
+              </td>
+            </tr>
+          </table>
+`
+    : ""
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -65,6 +120,8 @@ function buildWelcomeEmail(prenom: string, email: string): string {
               <p style="margin:0 0 32px;font-size:14px;line-height:1.8;color:#b0a898;letter-spacing:0.02em;">
                 Nous sommes honor&eacute;s de vous accueillir au sein d&rsquo;<strong style="color:#f5f0e8;">Éloquence AI</strong> — la plateforme d&rsquo;entra&icirc;nement &agrave; l&rsquo;art de la parole. Vous avez d&eacute;sormais acc&egrave;s &agrave; des outils con&ccedil;us pour affiner votre voix, structurer vos discours et vous pr&eacute;parer aux situations les plus exigeantes.
               </p>
+
+              ${confirmationSection}
 
               <!-- CGU acceptance -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-left:2px solid #c9a84c;background:rgba(201,168,76,0.03);margin-bottom:32px;">
@@ -175,11 +232,18 @@ function buildWelcomeEmail(prenom: string, email: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, prenom, phone } = await req.json()
+    const { email, prenom, phone, skipConfirmation } = await req.json()
     const apiKey = process.env.BREVO_API_KEY
     if (!apiKey) return NextResponse.json({ ok: false, error: "Missing API key" }, { status: 500 })
 
-    const emailHtml = buildWelcomeEmail(prenom || "", email)
+    // Generate a Supabase confirmation link unless the caller explicitly opts out
+    // (e.g. for Google OAuth users whose email is already confirmed)
+    let confirmationLink: string | null = null
+    if (!skipConfirmation) {
+      confirmationLink = await getConfirmationLink(email)
+    }
+
+    const emailHtml = buildWelcomeEmail(prenom || "", email, confirmationLink)
 
     // 1. Envoyer le mail — fire and log
     const emailRes = await fetch("https://api.brevo.com/v3/smtp/email", {

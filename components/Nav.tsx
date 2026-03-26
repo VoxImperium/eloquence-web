@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase"
 import Link from "next/link"
+import MobileMenu from "@/components/MobileMenu"
 
 export default function Nav() {
   const [user,     setUser]     = useState(null)
@@ -45,7 +46,8 @@ export default function Nav() {
         </span>
       </Link>
 
-      <div style={{display:"flex", gap:36}}>
+      {/* Desktop navigation links — hidden on mobile */}
+      <div className="nav-desktop-links" style={{display:"flex", gap:36}}>
         {[
           ["/record",          "Analyser"],
           ["/simulate",        "Joute verbale"],
@@ -66,7 +68,8 @@ export default function Nav() {
         ))}
       </div>
 
-      <div style={{display:"flex", alignItems:"center", gap:20}}>
+      {/* Desktop action buttons — hidden on mobile */}
+      <div className="nav-desktop-actions" style={{display:"flex", alignItems:"center", gap:20}}>
         {user ? (
           <Link href="/dashboard" className="btn-gold"><span className="btn-text">Mon espace</span></Link>
         ) : (
@@ -76,6 +79,9 @@ export default function Nav() {
           </>
         )}
       </div>
+
+      {/* Mobile hamburger menu — visible only on mobile */}
+      <MobileMenu />
     </nav>
   )
 }

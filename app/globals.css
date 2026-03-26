@@ -521,3 +521,169 @@ body {
     padding: 0 16px 60px;
   }
 }
+
+/* ── Mobile hamburger menu ── */
+
+/* Desktop: hide mobile menu button */
+.mobile-menu-container {
+  display: none;
+}
+
+/* Mobile: show burger, hide desktop nav items */
+@media (max-width: 768px) {
+  .mobile-menu-container {
+    display: block;
+    position: relative;
+  }
+
+  .nav-desktop-links,
+  .nav-desktop-actions {
+    display: none !important;
+  }
+
+  nav {
+    padding: 0 20px !important;
+  }
+}
+
+/* Burger / Mic toggle button */
+.mobile-menu-btn {
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  transition: border-color 0.3s, background 0.3s;
+  padding: 0;
+}
+
+.mobile-menu-btn:hover {
+  border-color: rgba(201,168,76,0.6);
+  background: rgba(201,168,76,0.05);
+}
+
+/* Backdrop */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,15,0.5);
+  z-index: 98;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Dropdown panel */
+.mobile-menu-dropdown {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: rgba(10,10,15,0.97);
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1),
+              opacity    0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+.mobile-menu-dropdown--open {
+  max-height: 520px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-menu-inner {
+  padding: 20px 24px 28px;
+}
+
+.mobile-menu-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent);
+  margin: 0 0 16px;
+}
+
+.mobile-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8a8070;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(201,168,76,0.06);
+  transition: color 0.2s;
+}
+
+.mobile-menu-link:last-of-type {
+  border-bottom: none;
+}
+
+.mobile-menu-link:hover,
+.mobile-menu-link:active {
+  color: #c9a84c;
+}
+
+.mobile-menu-link-arrow {
+  color: rgba(201,168,76,0.5);
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+.mobile-menu-link:hover .mobile-menu-link-arrow {
+  transform: translateX(3px);
+  color: #c9a84c;
+}
+
+.mobile-menu-cta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 16px;
+  padding: 14px 28px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #0a0a0f;
+  background: #c9a84c;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s;
+}
+
+.mobile-menu-cta:hover {
+  background: #e8c870;
+}
+
+/* Sound wave animation on the mic icon */
+@keyframes soundPulse {
+  0%,100% { opacity: 0.7; }
+  50%      { opacity: 0.2; }
+}
+
+@keyframes soundPulseOuter {
+  0%,100% { opacity: 0.4; }
+  50%      { opacity: 0.08; }
+}
+
+.sound-wave-1 {
+  animation: soundPulse 1.4s ease-in-out infinite;
+}
+
+.sound-wave-2 {
+  animation: soundPulseOuter 1.4s ease-in-out infinite 0.3s;
+}

@@ -83,9 +83,12 @@ export default function SignupSuccessPage() {
           marginBottom: 40,
           letterSpacing: "0.02em",
         }}>
-          Votre compte a bien été créé. Un email de bienvenue vous a été envoyé.
+          Votre compte a bien été créé. Un email de bienvenue avec un{" "}
+          <strong style={{ color: "#c9a84c" }}>lien de confirmation</strong> vous a été envoyé.
           <br />
-          Vous allez être redirigé vers la page de connexion dans{" "}
+          Veuillez confirmer votre email avant de vous connecter.
+          <br />
+          Vous allez être redirigé dans{" "}
           <span style={{ color: "#c9a84c", fontWeight: 600 }}>{countdown}</span> seconde{countdown > 1 ? "s" : ""}.
         </p>
 
