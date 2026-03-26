@@ -379,7 +379,7 @@ body {
 @media (max-width: 768px) {
   .sidebar-panel {
     transform: translateX(-100%);
-    width: 256px !important; /* always full width on mobile */
+    width: 256px !important; /* fixed width on mobile */
   }
 
   .sidebar-panel.sidebar-mobile-open {
@@ -408,7 +408,7 @@ body {
 }
 
 /* Tablet (768px - 1024px): sidebar visible, FAB hidden */
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (min-width: 768.01px) and (max-width: 1024px) {
   .sidebar-mobile-fab {
     display: none !important;
   }
