@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -65,8 +65,13 @@ const PAID_PLANS = [
 export default function PricingPage() {
   const [loading, setLoading] = useState<string|null>(null)
   const [error, setError] = useState<string|null>(null)
+  const [user, setUser] = useState<any>(null)
   const supabase = createClient()
   const router   = useRouter()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+  }, [])
 
   const upgrade = async (plan: typeof PAID_PLANS[0]) => {
     setLoading(plan.id)
@@ -167,8 +172,8 @@ export default function PricingPage() {
             ))}
           </div>
         </div>
-        <Link href="/login" className="btn-outline" style={{flexShrink:0, whiteSpace:"nowrap"}}>
-          <span>Commencer gratuitement →</span>
+        <Link href={user ? "/dashboard" : "/login"} className="btn-outline" style={{flexShrink:0, whiteSpace:"nowrap"}}>
+          <span>{user ? "Mon espace →" : "Commencer gratuitement →"}</span>
         </Link>
       </div>
 
