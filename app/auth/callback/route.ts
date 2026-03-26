@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
             email: user.email ?? "",
             prenom: user.user_metadata?.full_name ?? user.user_metadata?.name ?? "",
             phone: "",
+            skipConfirmation: true, // Google OAuth users are already email-confirmed
           }),
         }).catch((err) => console.error("Failed to send welcome email:", err))
 
