@@ -29,7 +29,6 @@ function buildWelcomeEmail(prenom: string, email: string): string {
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 8px;">
                 <tr>
                   <td align="center" style="padding:0;">
-                    <!-- Icône microphone SVG -->
                     <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 12px;">
                       <rect x="14" y="2" width="8" height="16" rx="4" fill="#c9a84c"/>
                       <path d="M6 18 Q6 26 18 26 Q30 26 30 18" stroke="#c9a84c" stroke-width="2.4" fill="none" stroke-linecap="round"/>
