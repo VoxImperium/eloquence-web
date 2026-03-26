@@ -1,22 +1,24 @@
 "use client"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function SignupSuccessPage() {
   const [countdown, setCountdown] = useState(5)
+  const router = useRouter()
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCountdown(c => {
         if (c <= 1) {
           clearInterval(interval)
-          window.location.href = "/login"
+          router.push("/login")
         }
         return c - 1
       })
     }, 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [router])
 
   return (
     <main style={{
