@@ -27,11 +27,11 @@ export default function CGUPage() {
           },
           {
             title: "3. Forfaits et abonnements",
-            content: "La plateforme propose un accès gratuit limité et des abonnements payants (Étudiant à 7,99€/mois, Basique à 10,99€/mois, Pro à 19,99€/mois). Les abonnements sont sans engagement et résiliables à tout moment depuis l'espace personnel. Le paiement est effectué mensuellement via Stripe. Aucun remboursement ne sera effectué pour la période en cours au moment de la résiliation."
+            content: "La plateforme propose un accès gratuit limité et des abonnements payants (Basique à 7,99€/mois, Illimité à 15,99€/mois). Les abonnements sont sans engagement et résiliables à tout moment depuis l'espace personnel. Le paiement est effectué mensuellement via Stripe. Aucun remboursement ne sera effectué pour la période en cours au moment de la résiliation."
           },
           {
-            title: "4. Tarif étudiant",
-            content: "L'accès au tarif Étudiant est conditionné à la fourniture d'un justificatif de scolarité valide en cours de validité. Toute fraude concernant le statut étudiant entraînera la résiliation immédiate de l'abonnement et le basculement vers le tarif standard, avec facturation rétroactive de la différence."
+            title: "4. Utilisation acceptable",
+            content: "L'utilisateur s'engage à utiliser la plateforme Éloquence AI dans le respect des lois en vigueur et des présentes CGU. Il est interdit d'utiliser la plateforme à des fins illicites, de tenter d'en compromettre la sécurité ou d'en perturber le fonctionnement. Tout usage abusif pourra entraîner la suspension immédiate du compte."
           },
           {
             title: "5. Propriété intellectuelle",

@@ -161,10 +161,10 @@ export default function LegifrangePage() {
         }}>
           <p className="ornament" style={{marginBottom:16}}>✦</p>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:300, color:"#f5f0e8", marginBottom:12}}>
-            Cette fonctionnalité nécessite le forfait Étudiant ou Basique
+            Cette fonctionnalité nécessite le forfait Basique ou Illimité
           </h2>
           <p style={{fontSize:13, color:"#6a6258", lineHeight:1.9, marginBottom:32, maxWidth:480, margin:"0 auto 32px"}}>
-            Les cas pratiques juridiques avec Thémis sont disponibles à partir du forfait Étudiant.<br/>
+            Les cas pratiques juridiques avec Thémis sont disponibles à partir du forfait Basique.<br/>
             Inscrivez-vous dès maintenant pour débloquer la plaidoirie par IA.
           </p>
           <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
@@ -188,7 +188,7 @@ export default function LegifrangePage() {
           </p>
           <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7, marginBottom:20}}>
             Vous avez utilisé tous vos cas pratiques ce mois-ci.<br/>
-            Passez au forfait Basique pour 20 cas / mois.
+            Passez au forfait Illimité pour des cas illimités / mois.
           </p>
           <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
             <span className="btn-text">Voir les forfaits →</span>

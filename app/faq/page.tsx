@@ -9,15 +9,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "Quels sont les forfaits disponibles ?",
-    a: "Nous proposons 4 forfaits : Gratuit (2 analyses/mois), Étudiant à 7,99€/mois (10 analyses/mois, justificatif requis), Basique à 10,99€/mois (analyses illimitées), et Pro à 19,99€/mois (fonctionnalités avancées + accès Thémis illimité)."
+    a: "Nous proposons 3 forfaits : Gratuit (0€ — 2 analyses/mois), Basique à 7,99€/mois (10 analyses/mois, accès à Thémis), et Illimité à 15,99€/mois (tout illimité + Export PDF)."
   },
   {
-    q: "Comment fonctionne le justificatif étudiant ?",
-    a: "Pour bénéficier du tarif étudiant à 7,99€/mois, vous devez fournir un justificatif de scolarité valide (carte étudiante, certificat de scolarité). Votre statut est vérifié lors de la souscription."
-  },
-  {
-    q: "Puis-je résilier à tout moment ?",
-    a: "Oui, vous pouvez résilier votre abonnement à tout moment depuis votre espace personnel, sans frais ni engagement. L'accès reste actif jusqu'à la fin de la période facturée."
+    q: "Comment résilier mon abonnement ?",
+    a: "Vous pouvez résilier votre abonnement à tout moment depuis votre espace personnel, sans frais ni engagement. L'accès reste actif jusqu'à la fin de la période facturée."
   },
   {
     q: "Comment fonctionne Thémis, le moteur de plaidoirie juridique ?",
@@ -25,7 +21,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Mes données audio sont-elles conservées ?",
-    a: "Vos enregistrements audio sont traités en temps réel pour l'analyse et ne sont pas stockés sur nos serveurs après traitement. L'historique de vos analyses (résultats et scores) est conservé selon la durée de votre forfait (7 jours gratuit, 30 jours Étudiant/Basique, illimité Pro)."
+    a: "Vos enregistrements audio sont traités en temps réel pour l'analyse et ne sont pas stockés sur nos serveurs après traitement. L'historique de vos analyses (résultats et scores) est conservé selon la durée de votre forfait (7 jours gratuit, 30 jours Basique, illimité Illimité)."
   },
   {
     q: "Comment contacter le support ?",
