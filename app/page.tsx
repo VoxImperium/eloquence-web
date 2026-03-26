@@ -195,7 +195,11 @@ export default function HomePage() {
             Prêt à vous élever ?
           </h2>
           <p style={{fontSize:13, color:"#6a6258", marginBottom:40, lineHeight:1.9}}>Commencez gratuitement. Aucune carte bancaire requise.</p>
-          <Link href="/login" className="btn-gold"><span className="btn-text">Créer mon compte gratuit</span></Link>
+          {user ? (
+            <Link href="/dashboard" className="btn-gold"><span className="btn-text">Mon espace →</span></Link>
+          ) : (
+            <Link href="/login" className="btn-gold"><span className="btn-text">Créer mon compte gratuit</span></Link>
+          )}
         </div>
 
         {/* Footer légal */}
