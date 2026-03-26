@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import Nav from "@/components/Nav"
+import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Éloquence.ai — L'art oratoire sublimé par l'intelligence artificielle",
@@ -19,6 +20,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Nav />
         <div className="pt-16">{children}</div>
+        <footer style={{
+          borderTop: "1px solid rgba(201,168,76,0.08)",
+          padding: "24px 48px",
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          gap: "28px",
+          marginTop: 40,
+        }}>
+          {[
+            { href: "/privacy", label: "Politique de Confidentialité" },
+            { href: "/cguv", label: "CGUV" },
+            { href: "/mentions-legales", label: "Mentions légales" },
+            { href: "/faq", label: "FAQ" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              style={{ fontSize: 10, color: "#6a6258", letterSpacing: "0.1em", textDecoration: "none", fontFamily: "'Raleway',sans-serif", textTransform: "uppercase" }}
+            >
+              {label}
+            </Link>
+          ))}
+          <span style={{ fontSize: 10, color: "#3a3530", letterSpacing: "0.08em", fontFamily: "'Raleway',sans-serif" }}>
+            © {new Date().getFullYear()} Éloquence AI
+          </span>
+        </footer>
       </body>
     </html>
   )

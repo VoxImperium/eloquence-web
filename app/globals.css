@@ -413,3 +413,8 @@ body {
     display: none !important;
   }
 }
+
+/* Texte justifié pour pages légales */
+.text-justify {
+  text-align: justify;
+}

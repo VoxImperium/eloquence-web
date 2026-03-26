@@ -27,6 +27,12 @@ export default function DashboardPage() {
   const [pwdMsg,      setPwdMsg]      = useState<{type:"success"|"error", text:string}|null>(null)
   const [pwdLoading,  setPwdLoading]  = useState(false)
 
+  // Delete account state
+  const [deleteStep,     setDeleteStep]     = useState<0|1|2>(0) // 0=closed, 1=confirm, 2=enter pwd
+  const [deletePassword, setDeletePassword] = useState("")
+  const [deleteMsg,      setDeleteMsg]      = useState<{type:"success"|"error", text:string}|null>(null)
+  const [deleteLoading,  setDeleteLoading]  = useState(false)
+
   // History tab state
   const [histPage,    setHistPage]    = useState(0)
   const [expandedId,  setExpandedId]  = useState<string|null>(null)
@@ -108,6 +114,50 @@ export default function DashboardPage() {
       setNewPassword("")
       setConfirmPwd("")
     }
+  }
+
+  const deleteAccount = async () => {
+    setDeleteMsg(null)
+    if (!deletePassword) {
+      setDeleteMsg({ type: "error", text: "Veuillez entrer votre mot de passe." })
+      return
+    }
+    setDeleteLoading(true)
+
+    // Re-authenticate to get a fresh session token
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user?.email || "",
+      password: deletePassword,
+    })
+    if (signInError) {
+      setDeleteLoading(false)
+      setDeleteMsg({ type: "error", text: "Mot de passe incorrect." })
+      return
+    }
+
+    // Get fresh session token
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      setDeleteLoading(false)
+      setDeleteMsg({ type: "error", text: "Impossible de récupérer la session. Réessayez." })
+      return
+    }
+
+    const res = await fetch("/api/user/delete-account", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${session.access_token}` },
+    })
+
+    const data = await res.json()
+    setDeleteLoading(false)
+
+    if (!res.ok || !data.ok) {
+      setDeleteMsg({ type: "error", text: data.error || "Erreur lors de la suppression du compte." })
+      return
+    }
+
+    await supabase.auth.signOut()
+    router.push("/?deleted=1")
   }
 
   if (loading) return (
@@ -573,6 +623,165 @@ export default function DashboardPage() {
               ? new Date(user.last_sign_in_at).toLocaleDateString("fr-FR", {weekday:"long", day:"numeric", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit"})
               : "—"}
           </p>
+
+          <div style={{height:1, background:"rgba(201,168,76,0.15)", marginBottom:32, marginTop:40}}/>
+
+          {/* Zone de danger — Suppression du compte */}
+          <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#c97a4c", marginBottom:16}}>
+            Zone de danger
+          </p>
+          <div style={{border:"1px solid rgba(201,90,50,0.25)", padding:"20px 24px", background:"rgba(201,90,50,0.03)"}}>
+            <p style={{fontSize:13, color:"#8a8070", lineHeight:1.7, marginBottom:20}}>
+              La suppression de votre compte est <strong style={{color:"#f5f0e8"}}>irréversible</strong>. Toutes vos données (profil, analyses, historiques) seront définitivement effacées conformément au RGPD (Art. 17). Les factures restent conservées 6 ans (obligation légale).
+            </p>
+            <button
+              onClick={() => { setDeleteStep(1); setDeleteMsg(null) }}
+              style={{
+                background:"transparent",
+                border:"1px solid rgba(201,90,50,0.5)",
+                color:"#c97a4c",
+                padding:"10px 20px",
+                fontFamily:"'Raleway',sans-serif",
+                fontSize:10,
+                letterSpacing:"0.2em",
+                textTransform:"uppercase" as const,
+                cursor:"pointer",
+                transition:"all 0.3s",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(201,90,50,0.1)" }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent" }}
+            >
+              ⚠ Supprimer définitivement mon compte
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: SUPPRESSION DU COMPTE ─── */}
+      {deleteStep > 0 && (
+        <div style={{
+          position:"fixed", inset:0, zIndex:1000,
+          background:"rgba(10,10,15,0.92)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          padding:"20px",
+        }}>
+          <div style={{
+            background:"#0d0d14",
+            border:"1px solid rgba(201,90,50,0.3)",
+            padding:"40px",
+            maxWidth:480,
+            width:"100%",
+          }}>
+            {deleteStep === 1 && (
+              <>
+                <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#c97a4c", marginBottom:20}}>
+                  Confirmation requise
+                </p>
+                <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:300, color:"#f5f0e8", marginBottom:16, lineHeight:1.2}}>
+                  Supprimer votre compte ?
+                </h2>
+                <p style={{fontSize:13, color:"#8a8070", lineHeight:1.8, marginBottom:28}}>
+                  Cette action est <strong style={{color:"#f5f0e8"}}>irréversible</strong>. Toutes vos données personnelles, analyses et historiques seront définitivement supprimés. Vos enregistrements audio sont déjà supprimés immédiatement après chaque analyse.
+                </p>
+                <div style={{display:"flex", gap:12}}>
+                  <button
+                    onClick={() => { setDeleteStep(0); setDeleteMsg(null) }}
+                    style={{
+                      flex:1, padding:"12px", background:"transparent",
+                      border:"1px solid rgba(201,168,76,0.25)",
+                      color:"#6a6258", fontSize:11, letterSpacing:"0.15em",
+                      textTransform:"uppercase" as const,
+                      fontFamily:"'Raleway',sans-serif", cursor:"pointer",
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => setDeleteStep(2)}
+                    style={{
+                      flex:1, padding:"12px", background:"rgba(201,90,50,0.15)",
+                      border:"1px solid rgba(201,90,50,0.5)",
+                      color:"#c97a4c", fontSize:11, letterSpacing:"0.15em",
+                      textTransform:"uppercase" as const,
+                      fontFamily:"'Raleway',sans-serif", cursor:"pointer",
+                    }}
+                  >
+                    Continuer
+                  </button>
+                </div>
+              </>
+            )}
+
+            {deleteStep === 2 && (
+              <>
+                <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#c97a4c", marginBottom:20}}>
+                  Étape finale — Confirmation du mot de passe
+                </p>
+                <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:300, color:"#f5f0e8", marginBottom:16, lineHeight:1.2}}>
+                  Confirmez votre identité
+                </h2>
+                <p style={{fontSize:13, color:"#8a8070", lineHeight:1.8, marginBottom:24}}>
+                  Entrez votre mot de passe pour confirmer la suppression définitive de votre compte.
+                </p>
+                <div style={{marginBottom:24}}>
+                  <label style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.2em", textTransform:"uppercase" as const, color:"#6a6258", display:"block", marginBottom:8}}>
+                    Mot de passe
+                  </label>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={e => setDeletePassword(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") deleteAccount() }}
+                    placeholder="Votre mot de passe"
+                    style={{
+                      width:"100%", boxSizing:"border-box" as const,
+                      border:"1px solid rgba(201,90,50,0.35)",
+                      padding:"12px 16px",
+                      background:"transparent",
+                      color:"#f5f0e8",
+                      fontSize:13,
+                      outline:"none",
+                      fontFamily:"'Raleway',sans-serif",
+                    }}
+                  />
+                </div>
+                {deleteMsg && (
+                  <p style={{fontSize:12, color: deleteMsg.type === "error" ? "#c97a4c" : "#c9a84c", marginBottom:16}}>
+                    {deleteMsg.text}
+                  </p>
+                )}
+                <div style={{display:"flex", gap:12}}>
+                  <button
+                    onClick={() => { setDeleteStep(0); setDeletePassword(""); setDeleteMsg(null) }}
+                    disabled={deleteLoading}
+                    style={{
+                      flex:1, padding:"12px", background:"transparent",
+                      border:"1px solid rgba(201,168,76,0.25)",
+                      color:"#6a6258", fontSize:11, letterSpacing:"0.15em",
+                      textTransform:"uppercase" as const,
+                      fontFamily:"'Raleway',sans-serif", cursor:"pointer",
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={deleteAccount}
+                    disabled={deleteLoading}
+                    style={{
+                      flex:1, padding:"12px", background:"rgba(201,90,50,0.2)",
+                      border:"1px solid rgba(201,90,50,0.6)",
+                      color:"#c97a4c", fontSize:11, letterSpacing:"0.15em",
+                      textTransform:"uppercase" as const,
+                      fontFamily:"'Raleway',sans-serif", cursor: deleteLoading ? "not-allowed" : "pointer",
+                      opacity: deleteLoading ? 0.6 : 1,
+                    }}
+                  >
+                    {deleteLoading ? "Suppression..." : "Supprimer définitivement"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 

@@ -31,6 +31,10 @@ const FAQ_ITEMS = [
     q: "Le paiement est-il sécurisé ?",
     a: "Oui, tous les paiements sont sécurisés par Stripe, leader mondial du paiement en ligne. Nous ne stockons aucune information bancaire sur nos serveurs."
   },
+  {
+    q: "Puis-je supprimer mon compte et toutes mes données ?",
+    a: "Oui, vous disposez du droit à l'oubli selon le RGPD (Article 17). Vous pouvez supprimer votre compte et toutes vos données (profil, analyses, historiques) à tout moment depuis votre tableau de bord, onglet Sécurité. Vos enregistrements audio sont supprimés immédiatement après chaque analyse. Les factures restent conservées 6 ans pour conformité fiscale française. Pour toute demande supplémentaire, contactez eloquenceaii@gmail.com."
+  },
 ]
 
 export default function FAQPage() {
@@ -89,7 +93,8 @@ export default function FAQPage() {
 
       <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 32, marginTop: 48 }}>
         <Link href="/" style={{ fontSize: 11, color: "#6a6258", letterSpacing: "0.1em", textDecoration: "none" }}>Accueil →</Link>
-        <Link href="/cgu" style={{ fontSize: 11, color: "#6a6258", letterSpacing: "0.1em", textDecoration: "none" }}>CGU →</Link>
+        <Link href="/cguv" style={{ fontSize: 11, color: "#6a6258", letterSpacing: "0.1em", textDecoration: "none" }}>CGUV →</Link>
+        <Link href="/privacy" style={{ fontSize: 11, color: "#6a6258", letterSpacing: "0.1em", textDecoration: "none" }}>Confidentialité →</Link>
         <Link href="/mentions-legales" style={{ fontSize: 11, color: "#6a6258", letterSpacing: "0.1em", textDecoration: "none" }}>Mentions légales →</Link>
       </div>
     </main>
