@@ -60,7 +60,6 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
           zIndex: 90,
           display: "flex",
           flexDirection: "column",
-          transform: mobileOpen ? "translateX(0)" : undefined,
         }}
         className={`sidebar-panel${mobileOpen ? " sidebar-mobile-open" : ""}`}
       >
