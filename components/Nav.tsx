@@ -1,9 +1,14 @@
 "use client"
 import { useEffect, useState } from "react"
+import { Menu } from "lucide-react"
 import { createClient } from "@/lib/supabase"
 import Link from "next/link"
 
-export default function Nav() {
+interface NavProps {
+  onMobileMenuToggle?: () => void
+}
+
+export default function Nav({ onMobileMenuToggle }: NavProps = {}) {
   const [user,     setUser]     = useState(null)
   const [scrolled, setScrolled] = useState(false)
   const supabase = createClient()
