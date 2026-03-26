@@ -51,8 +51,8 @@ function LoginForm() {
           body: JSON.stringify({
             email: data.user?.email || "",
             prenom: data.user?.user_metadata?.full_name || "",
-            plan: "free",
-            phone: phone || undefined,
+            phone: phone || "",
+            plan: "free"
           })
         }).catch(() => {})
         router.push(safeRedirect)
@@ -107,7 +107,7 @@ function LoginForm() {
           </h1>
           <p style={{fontSize:12, color:"#6a6258", marginBottom:40, letterSpacing:"0.04em"}}>
             {mode === "login" ? "Pas encore membre ?" : "Déjà un compte ?"} {" "}
-            <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
+            <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setPhone("") }}
               style={{color:"#c9a84c", background:"none", border:"none", cursor:"pointer", fontSize:12, fontFamily:"'Raleway',sans-serif", letterSpacing:"0.04em", textDecoration:"underline"}}>
               {mode === "login" ? "Créer un compte" : "Se connecter"}
             </button>
@@ -127,14 +127,17 @@ function LoginForm() {
           </div>
 
           {mode === "signup" && (
-            <div style={{marginBottom:36}}>
+            <div style={{marginBottom:28}}>
               <label className="label-oratoire">
-                Téléphone <span style={{color:"#6a6258", fontSize:11, fontWeight:400}}>
-                  (optionnel)
-                </span>
+                Téléphone <span style={{color:"#6a6258", fontSize:10, letterSpacing:"0.05em"}}>(optionnel)</span>
               </label>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                className="input-oratoire" placeholder="+33 6 00 00 00 00"/>
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                className="input-oratoire"
+                placeholder="+33 6 00 00 00 00"
+              />
             </div>
           )}
 
