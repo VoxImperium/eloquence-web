@@ -5,7 +5,7 @@ import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Éloquence.ai — L'art oratoire sublimé par l'intelligence artificielle",
-  description: "Analyse vocale, joute verbale, entraînement socratique et réécriture oratoire. Pour les orateurs d'exception.",
+  description: "Analyse vocale, joute verbale, entraînement socratique, réécriture oratoire, cas pratiques juridiques et grands concours. Pour les orateurs d'exception.",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

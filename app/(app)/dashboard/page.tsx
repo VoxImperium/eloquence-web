@@ -438,13 +438,14 @@ export default function DashboardPage() {
           {/* Accès rapides */}
           <div>
             <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#6a6258", marginBottom:20}}>Accès rapide</p>
-            <div style={{display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:8}}>
+            <div style={{display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:8}}>
               {[
-                { label:"Analyser",      sub:"Enregistrement vocal",      href:"/record"          },
-                { label:"Joute verbale",  sub:"5 scénarios d'élite",       href:"/simulate"        },
-                { label:"Entraînement",  sub:"500 sujets philosophiques",  href:"/training"        },
-                { label:"Mon discours",  sub:"Réécriture oratoire",       href:"/speech-analysis" },
-                { label:"Cas pratiques", sub:"Légifrance × Thémis",        href:"/legifrance"      },
+                { label:"Analyser",        sub:"Enregistrement vocal",      href:"/record"          },
+                { label:"Joute verbale",   sub:"5 scénarios d'élite",       href:"/simulate"        },
+                { label:"Entraînement",    sub:"500 sujets philosophiques",  href:"/training"        },
+                { label:"Mon discours",    sub:"Réécriture oratoire",       href:"/speech-analysis" },
+                { label:"Cas pratiques",   sub:"Légifrance × Thémis",       href:"/legifrance"      },
+                { label:"Grands Concours", sub:"CRFPA & ENM",               href:"/grands-concours" },
               ].map(a => (
                 <Link key={a.href} href={a.href} style={{
                   border:"1px solid rgba(201,168,76,0.15)",
