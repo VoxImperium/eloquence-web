@@ -49,11 +49,12 @@ export default function Nav() {
       {/* Desktop navigation links — hidden on mobile */}
       <div className="nav-desktop-links" style={{display:"flex", gap:36}}>
         {[
-          ["/record",          "Analyser"],
-          ["/simulate",        "Joute verbale"],
-          ["/training",        "Entraînement"],
-          ["/speech-analysis", "Discours"],
-          ["/pricing",         "Tarifs"],
+          ["/record",           "Analyser"],
+          ["/simulate",         "Joute verbale"],
+          ["/training",         "Entraînement"],
+          ["/speech-analysis",  "Discours"],
+          ["/grands-concours",  "Grands Concours"],
+          ["/pricing",          "Tarifs"],
         ].map(([href, label]) => (
           <Link key={href} href={href} style={{
             fontFamily:"'Raleway',sans-serif",

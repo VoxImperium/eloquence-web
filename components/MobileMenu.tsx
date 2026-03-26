@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "/simulate",        label: "Joute verbale" },
   { href: "/training",        label: "Entraînement" },
   { href: "/speech-analysis", label: "Discours" },
+  { href: "/grands-concours", label: "Grands Concours" },
   { href: "/pricing",         label: "Tarifs" },
 ]
 
