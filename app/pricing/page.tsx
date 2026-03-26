@@ -90,7 +90,7 @@ export default function PricingPage() {
   }
 
   return (
-    <main style={{minHeight:"100vh", padding:"100px 48px", maxWidth:1100, margin:"0 auto"}}>
+    <main className="pricing-page-main">
 
       <div style={{textAlign:"center", marginBottom:72}}>
         <div className="eyebrow" style={{justifyContent:"center", marginBottom:20}}>
@@ -142,7 +142,7 @@ export default function PricingPage() {
       </div>
 
       {/* Plans payants — 3 colonnes */}
-      <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginBottom:48}}>
+      <div className="pricing-grid">
         {PAID_PLANS.map(plan => (
           <div key={plan.id} style={{
             border: plan.popular ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(201,168,76,0.15)",

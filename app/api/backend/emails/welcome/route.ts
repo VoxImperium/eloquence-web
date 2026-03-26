@@ -164,47 +164,44 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.BREVO_API_KEY
     if (!apiKey) return NextResponse.json({ ok: false, error: "Missing API key" }, { status: 500 })
 
-    // 1. Envoyer le mail de bienvenue HTML
     const emailHtml = buildWelcomeEmail(prenom || "", email)
+
+    // 1. Envoyer le mail — fire and log
     const emailRes = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
+      headers: { "Content-Type": "application/json", "api-key": apiKey },
       body: JSON.stringify({
         sender: { name: "Éloquence AI", email: "eloquenceaii@gmail.com" },
         to: [{ email, name: prenom || email }],
         subject: "Bienvenue sur Éloquence AI ✦",
         htmlContent: emailHtml,
       }),
-    })
-    if (!emailRes.ok) {
-      const detail = await emailRes.json().catch(() => ({}))
-      return NextResponse.json({ ok: false, error: "Email send failed", detail }, { status: 502 })
+    }).catch(e => { console.error("Brevo email fetch error:", e); return null })
+    if (!emailRes || !emailRes.ok) {
+      const detail = await emailRes?.json().catch(() => ({}))
+      console.error("Brevo email send failed:", detail)
     }
 
-    // 2. Ajouter le contact dans la liste Brevo #2
+    // 2. Ajouter/mettre à jour le contact dans la liste Brevo #2 — indépendant de l'email
     const attributes: Record<string, string> = {}
     if (prenom) attributes.PRENOM = prenom
     if (phone) attributes.SMS = phone
 
     const contactRes = await fetch("https://api.brevo.com/v3/contacts", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
+      headers: { "Content-Type": "application/json", "api-key": apiKey },
       body: JSON.stringify({
         email,
         listIds: [2],
         updateEnabled: true,
         attributes,
       }),
-    })
-    if (!contactRes.ok) {
-      const detail = await contactRes.json().catch(() => ({}))
-      return NextResponse.json({ ok: false, error: "Contact creation failed", detail }, { status: 502 })
+    }).catch(e => { console.error("Brevo contact fetch error:", e); return null })
+
+    // Brevo retourne 201 (créé), 204 (mis à jour) ou parfois 200
+    if (!contactRes || (![200, 201, 204].includes(contactRes.status))) {
+      const detail = await contactRes?.json().catch(() => ({}))
+      console.error("Brevo contact creation/update failed:", contactRes?.status, detail)
     }
 
     return NextResponse.json({ ok: true })

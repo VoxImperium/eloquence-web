@@ -197,6 +197,14 @@ export default function HomePage() {
           <p style={{fontSize:13, color:"#6a6258", marginBottom:40, lineHeight:1.9}}>Commencez gratuitement. Aucune carte bancaire requise.</p>
           <Link href="/login" className="btn-gold"><span className="btn-text">Créer mon compte gratuit</span></Link>
         </div>
+
+        {/* Footer légal */}
+        <div style={{display:"flex", justifyContent:"center", flexWrap:"wrap", gap:32, marginTop:48, paddingTop:32, borderTop:"1px solid rgba(201,168,76,0.08)"}}>
+          <Link href="/faq" style={{fontSize:11, color:"#6a6258", letterSpacing:"0.1em", textDecoration:"none"}}>FAQ →</Link>
+          <Link href="/cgu" style={{fontSize:11, color:"#6a6258", letterSpacing:"0.1em", textDecoration:"none"}}>CGU →</Link>
+          <Link href="/mentions-legales" style={{fontSize:11, color:"#6a6258", letterSpacing:"0.1em", textDecoration:"none"}}>Mentions légales →</Link>
+          <Link href="/pricing" style={{fontSize:11, color:"#6a6258", letterSpacing:"0.1em", textDecoration:"none"}}>Tarifs →</Link>
+        </div>
       </section>
 
     </main>
