@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import Nav from "@/components/Nav"
 
 export const metadata: Metadata = {
   title: "Éloquence.ai — L'art oratoire sublimé par l'intelligence artificielle",
@@ -17,8 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <Nav />
-        <div className="pt-16">{children}</div>
+        {children}
       </body>
     </html>
   )
