@@ -6,7 +6,7 @@ import OrateurSilhouettes from "@/components/OrateurSilhouettes"
 
 const PILLARS = [
   { num:"I",   title:"Analyse vocale",        desc:"Débit, pauses, expressivité. Chaque inflexion analysée avec la précision d'un maître de diction." },
-  { num:"II",  title:"Simulation d'élite",     desc:"Affrontez des interlocuteurs IA incarnant les situations les plus exigeantes de la vie professionnelle." },
+  { num:"II",  title:"Joute verbale",          desc:"Affrontez des interlocuteurs IA incarnant les situations les plus exigeantes de la vie professionnelle." },
   { num:"III", title:"Entraînement socratique",desc:"500 sujets de philosophie et société. Le dialogue comme méthode d'élévation de la pensée." },
   { num:"IV",  title:"Réécriture oratoire",    desc:"Vos discours transformés selon les canons de la rhétorique classique — exorde, narration, péroraison." },
   {
@@ -49,12 +49,10 @@ export default function HomePage() {
         }}/>
 
         {/* Contenu */}
-        <div style={{
+        <div className="hero-content-grid" style={{
           position:"relative", zIndex:10,
           width:"100%", maxWidth:1200,
-          margin:"0 auto", padding:"0 48px",
-          display:"grid", gridTemplateColumns:"1fr 1fr",
-          gap:80, alignItems:"center",
+          margin:"0 auto",
         }}>
           {/* Texte */}
           <div className="animate-fade-up">
@@ -104,7 +102,7 @@ export default function HomePage() {
           </div>
 
           {/* Silhouettes */}
-          <div style={{position:"relative", height:520}}>
+          <div className="hero-visual" style={{position:"relative", height:520}}>
             <OrateurSilhouettes />
             {/* Citation flottante */}
             <div style={{
@@ -149,12 +147,12 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div style={{display:"grid", gridTemplateColumns:"repeat(5,1fr)", border:"1px solid rgba(201,168,76,0.2)"}}>
+        <div className="pillars-grid" style={{border:"1px solid rgba(201,168,76,0.2)"}}>
           {PILLARS.map((p, i) => (
             <a key={i} href={["/record","/simulate","/training","/speech-analysis","/legifrance"][i]}
+              className="pillar-item"
               style={{
                 padding:"40px 28px",
-                borderRight: i < 4 ? "1px solid rgba(201,168,76,0.2)" : "none",
                 textDecoration:"none", color:"inherit",
                 position:"relative", overflow:"hidden",
                 transition:"background 0.4s",
@@ -182,7 +180,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA FINAL */}
-      <section style={{maxWidth:900, margin:"0 auto", padding:"0 48px 120px"}}>
+      <section className="cta-section" style={{maxWidth:900, margin:"0 auto"}}>
         <div style={{
           border:"1px solid rgba(201,168,76,0.2)",
           padding:"64px 80px",

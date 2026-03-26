@@ -10,7 +10,7 @@ const FREE_PLAN = {
   price:    "0",
   features: [
     "2 analyses vocales / mois",
-    "1 simulation / mois",
+    "1 joute verbale / mois",
     "20 sujets d'entraînement",
     "1 analyse de discours / mois",
     "Historique 7 jours",
@@ -29,7 +29,7 @@ const PAID_PLANS = [
     note:     null,
     features: [
       "10 analyses vocales / mois",
-      "5 simulations / mois",
+      "5 joutes verbales / mois",
       "200 sujets d'entraînement",
       "5 analyses de discours / mois",
       "10 cas pratiques juridiques / mois",
@@ -49,7 +49,7 @@ const PAID_PLANS = [
     note:     null,
     features: [
       "Analyses vocales illimitées",
-      "Simulations illimitées",
+      "Joutes verbales illimitées",
       "Sujets d'entraînement illimités",
       "Analyses de discours illimitées",
       "Cas pratiques juridiques illimités",

@@ -43,6 +43,7 @@ export default function DashboardPage() {
   const [expandedId,  setExpandedId]  = useState<string|null>(null)
   const [allSessions, setAllSessions] = useState<any[]>([])
   const [histLoading, setHistLoading] = useState(false)
+  const [histLoaded,  setHistLoaded]  = useState(false)
 
   const supabase = createClient()
   const router   = useRouter()
@@ -55,12 +56,15 @@ export default function DashboardPage() {
       const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
       setProfile(profile)
       setFirstName(profile?.first_name || "")
-      const { data: sessions } = await supabase
+      const { data: sessions, error: sessionsError } = await supabase
         .from("analysis_sessions")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(10)
+      if (sessionsError) {
+        console.error("[dashboard] sessions load error:", sessionsError)
+      }
       setSessions(sessions || [])
       setLoading(false)
     }
@@ -69,17 +73,21 @@ export default function DashboardPage() {
 
   const loadAllSessions = async (userId: string) => {
     setHistLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("analysis_sessions")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
+    if (error) {
+      console.error("[dashboard] loadAllSessions error:", error)
+    }
     setAllSessions(data || [])
+    setHistLoaded(true)
     setHistLoading(false)
   }
 
   useEffect(() => {
-    if (activeTab === "history" && user && allSessions.length === 0 && !histLoading) {
+    if (activeTab === "history" && user && !histLoaded && !histLoading) {
       loadAllSessions(user.id)
     }
   }, [activeTab, user])
@@ -433,7 +441,7 @@ export default function DashboardPage() {
             <div style={{display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:8}}>
               {[
                 { label:"Analyser",      sub:"Enregistrement vocal",      href:"/record"          },
-                { label:"Simulation",    sub:"5 scénarios d'élite",       href:"/simulate"        },
+                { label:"Joute verbale",  sub:"5 scénarios d'élite",       href:"/simulate"        },
                 { label:"Entraînement",  sub:"500 sujets philosophiques",  href:"/training"        },
                 { label:"Mon discours",  sub:"Réécriture oratoire",       href:"/speech-analysis" },
                 { label:"Cas pratiques", sub:"Légifrance × Thémis",        href:"/legifrance"      },
@@ -933,23 +941,42 @@ export default function DashboardPage() {
             <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#6a6258"}}>
               Toutes les analyses ({allSessions.length})
             </p>
-            <button
-              disabled={profile?.plan !== "illimite"}
-              title={profile?.plan !== "illimite" ? "Export PDF disponible avec le plan Illimité" : undefined}
-              style={{
-                border:"1px solid rgba(201,168,76,0.15)",
-                padding:"8px 16px",
-                background:"transparent",
-                color: profile?.plan === "illimite" ? "#c9a84c" : "#3a3830",
-                fontSize:10,
-                fontFamily:"'Raleway',sans-serif",
-                letterSpacing:"0.15em",
-                textTransform:"uppercase" as const,
-                cursor: profile?.plan === "illimite" ? "pointer" : "not-allowed",
-              }}
-            >
-              Export PDF {profile?.plan !== "illimite" && "🔒"}
-            </button>
+            <div style={{display:"flex", gap:8}}>
+              <button
+                onClick={() => { setHistLoaded(false); setAllSessions([]); loadAllSessions(user.id) }}
+                disabled={histLoading}
+                style={{
+                  border:"1px solid rgba(201,168,76,0.15)",
+                  padding:"8px 16px",
+                  background:"transparent",
+                  color:"#6a6258",
+                  fontSize:10,
+                  fontFamily:"'Raleway',sans-serif",
+                  letterSpacing:"0.15em",
+                  textTransform:"uppercase" as const,
+                  cursor: histLoading ? "not-allowed" : "pointer",
+                }}
+              >
+                {histLoading ? "..." : "↻"}
+              </button>
+              <button
+                disabled={profile?.plan !== "illimite"}
+                title={profile?.plan !== "illimite" ? "Export PDF disponible avec le plan Illimité" : undefined}
+                style={{
+                  border:"1px solid rgba(201,168,76,0.15)",
+                  padding:"8px 16px",
+                  background:"transparent",
+                  color: profile?.plan === "illimite" ? "#c9a84c" : "#3a3830",
+                  fontSize:10,
+                  fontFamily:"'Raleway',sans-serif",
+                  letterSpacing:"0.15em",
+                  textTransform:"uppercase" as const,
+                  cursor: profile?.plan === "illimite" ? "pointer" : "not-allowed",
+                }}
+              >
+                Export PDF {profile?.plan !== "illimite" && "🔒"}
+              </button>
+            </div>
           </div>
 
           {histLoading ? (

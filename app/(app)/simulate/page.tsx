@@ -109,14 +109,14 @@ export default function SimulatePage() {
       <div style={{marginBottom:48}}>
         <Link href="/" style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.2em", textTransform:"uppercase", color:"#6a6258", textDecoration:"none"}}>← Retour</Link>
         <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:20, marginBottom:16}}>
-          <div className="eyebrow" style={{marginBottom:0}}>Simulation d&apos;élite</div>
+          <div className="eyebrow" style={{marginBottom:0}}>Joute verbale</div>
           {quotaMax !== null && (
             <span style={{
               fontSize:10, letterSpacing:"0.1em", color: blocked ? "#c97a4c" : "#6a6258",
               border:`1px solid ${blocked ? "rgba(201,120,76,0.3)" : "rgba(201,168,76,0.15)"}`,
               padding:"3px 10px",
             }}>
-              {used} / {quotaMax} simulations ce mois
+              {used} / {quotaMax} joutes verbales ce mois
             </span>
           )}
         </div>
@@ -137,7 +137,7 @@ export default function SimulatePage() {
             Quota mensuel atteint
           </p>
           <p style={{fontSize:12, color:"#6a6258", lineHeight:1.7, marginBottom:20}}>
-            Vous avez utilisé toutes vos simulations ce mois-ci.<br/>
+            Vous avez utilisé toutes vos joutes verbales ce mois-ci.<br/>
             Passez à un forfait supérieur pour continuer.
           </p>
           <Link href="/pricing" className="btn-gold" style={{display:"inline-flex"}}>
@@ -191,7 +191,7 @@ export default function SimulatePage() {
           className="input-oratoire" style={{marginBottom:32, display:"block"}}
           onKeyDown={e=>e.key==="Enter"&&startChat()}/>
         <button onClick={startChat} className="btn-gold" style={{width:"100%", justifyContent:"center"}}>
-          <span className="btn-text">Démarrer la simulation →</span>
+          <span className="btn-text">Démarrer la joute verbale →</span>
         </button>
       </div>
     </main>
@@ -254,7 +254,7 @@ export default function SimulatePage() {
   if (step==="debrief"&&debrief) return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:760, margin:"0 auto"}}>
       <div style={{marginBottom:40}}>
-        <div className="eyebrow" style={{marginBottom:16}}>Bilan de simulation</div>
+        <div className="eyebrow" style={{marginBottom:16}}>Bilan de joute verbale</div>
         <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(32px,4vw,48px)", fontWeight:300}}>{S?.label}</h1>
       </div>
       <div style={{height:1, background:"linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)", marginBottom:40}}/>
@@ -281,7 +281,7 @@ export default function SimulatePage() {
         ))}
       </div>
       <div style={{display:"flex", gap:16}}>
-        <button onClick={()=>{setStep("select");setMessages([]);setDebrief(null);setScenario(null)}} className="btn-outline" style={{flex:1, justifyContent:"center"}}><span>Nouvelle simulation</span></button>
+        <button onClick={()=>{setStep("select");setMessages([]);setDebrief(null);setScenario(null)}} className="btn-outline" style={{flex:1, justifyContent:"center"}}><span>Nouvelle joute verbale</span></button>
         <Link href="/legifrance" className="btn-outline" style={{flex:1,justifyContent:"center"}}><span>Plaider un cas</span></Link>
         <Link href="/record" className="btn-gold" style={{flex:1, justifyContent:"center"}}><span className="btn-text">Analyser un discours</span></Link>
       </div>

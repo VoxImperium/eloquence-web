@@ -66,6 +66,21 @@ function buildWelcomeEmail(prenom: string, email: string): string {
                 Nous sommes honor&eacute;s de vous accueillir au sein d&rsquo;<strong style="color:#f5f0e8;">Éloquence AI</strong> — la plateforme d&rsquo;entra&icirc;nement &agrave; l&rsquo;art de la parole. Vous avez d&eacute;sormais acc&egrave;s &agrave; des outils con&ccedil;us pour affiner votre voix, structurer vos discours et vous pr&eacute;parer aux situations les plus exigeantes.
               </p>
 
+              <!-- CGU acceptance -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-left:2px solid #c9a84c;background:rgba(201,168,76,0.03);margin-bottom:32px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 6px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#c9a84c;">Conditions d&rsquo;utilisation</p>
+                    <p style="margin:0;font-size:13px;color:#b0a898;line-height:1.7;">
+                      En cr&eacute;ant votre compte, vous acceptez nos
+                      <a href="https://www.xn--loquence-90a.fr/cguv" style="color:#c9a84c;text-decoration:underline;">Conditions G&eacute;n&eacute;rales d&rsquo;Utilisation et de Vente</a>.
+                      Consultez &eacute;galement notre
+                      <a href="https://www.xn--loquence-90a.fr/privacy" style="color:#c9a84c;text-decoration:underline;">Politique de confidentialit&eacute;</a>.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
               <!-- Features box -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid rgba(201,168,76,0.3);background:rgba(201,168,76,0.04);margin-bottom:36px;">
                 <tr>
@@ -81,7 +96,7 @@ function buildWelcomeEmail(prenom: string, email: string): string {
                       <tr>
                         <td style="padding:6px 0;">
                           <span style="color:#c9a84c;margin-right:12px;">✦</span>
-                          <span style="font-size:13px;color:#f5f0e8;letter-spacing:0.02em;">1 simulation d&rsquo;entretien / mois</span>
+                          <span style="font-size:13px;color:#f5f0e8;letter-spacing:0.02em;">1 joute verbale / mois</span>
                         </td>
                       </tr>
                       <tr>

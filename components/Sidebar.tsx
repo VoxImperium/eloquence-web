@@ -16,7 +16,7 @@ import SidebarNav, { NavItem } from "./SidebarNav"
 const navItems: NavItem[] = [
   { href: "/dashboard",       label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/record",          label: "Analyser",         icon: Mic             },
-  { href: "/simulate",        label: "Simulation",       icon: Sparkles        },
+  { href: "/simulate",        label: "Joute verbale",    icon: Sparkles        },
   { href: "/training",        label: "Entraînement",     icon: BookOpen        },
   { href: "/speech-analysis", label: "Discours",         icon: BarChart2       },
   { href: "/legifrance",      label: "Légifrance",       icon: Scale           },

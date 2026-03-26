@@ -48,7 +48,7 @@ export default function Nav() {
       <div style={{display:"flex", gap:36}}>
         {[
           ["/record",          "Analyser"],
-          ["/simulate",        "Simulation"],
+          ["/simulate",        "Joute verbale"],
           ["/training",        "Entraînement"],
           ["/speech-analysis", "Discours"],
           ["/pricing",         "Tarifs"],
