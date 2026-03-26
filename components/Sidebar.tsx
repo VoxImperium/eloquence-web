@@ -27,13 +27,17 @@ interface SidebarProps {
   onToggle: () => void
   mobileOpen: boolean
   onMobileClose: () => void
+  isMobile: boolean
 }
 
-export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose, isMobile }: SidebarProps) {
+  const width = isMobile ? 256 : (collapsed ? 80 : 256)
+  const transform = isMobile ? (mobileOpen ? "translateX(0)" : "translateX(-100%)") : "translateX(0)"
+
   return (
     <>
       {/* Mobile backdrop */}
-      {mobileOpen && (
+      {isMobile && mobileOpen && (
         <div
           onClick={onMobileClose}
           style={{
@@ -42,7 +46,6 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
             zIndex: 85,
             background: "rgba(0,0,0,0.6)",
           }}
-          className="sidebar-backdrop"
         />
       )}
 
@@ -53,7 +56,8 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
           top: 64,
           left: 0,
           bottom: 0,
-          width: collapsed ? 80 : 256,
+          width,
+          transform,
           transition: "width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1)",
           background: "rgba(10,10,15,0.97)",
           borderRight: "1px solid rgba(201,168,76,0.1)",
@@ -61,15 +65,14 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
           display: "flex",
           flexDirection: "column",
         }}
-        className={`sidebar-panel${mobileOpen ? " sidebar-mobile-open" : ""}`}
       >
-        {/* Mini logo when collapsed */}
+        {/* Mini logo */}
         <div style={{
-          padding: collapsed ? "18px 0" : "18px 20px 14px",
+          padding: (!isMobile && collapsed) ? "18px 0" : "18px 20px 14px",
           borderBottom: "1px solid rgba(201,168,76,0.08)",
           display: "flex",
           alignItems: "center",
-          justifyContent: collapsed ? "center" : "flex-start",
+          justifyContent: (!isMobile && collapsed) ? "center" : "flex-start",
           gap: 10,
           overflow: "hidden",
         }}>
@@ -80,7 +83,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
               <line x1="10" y1="15" x2="10" y2="19" stroke="#c9a84c" strokeWidth="1.2" strokeLinecap="round"/>
               <line x1="6" y1="19" x2="14" y2="19" stroke="#c9a84c" strokeWidth="1.2" strokeLinecap="round"/>
             </svg>
-            {!collapsed && (
+            {(isMobile || !collapsed) && (
               <span style={{
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: 16,
@@ -96,31 +99,32 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
         </div>
 
         {/* Navigation items */}
-        <SidebarNav items={navItems} collapsed={collapsed} />
+        <SidebarNav items={navItems} collapsed={!isMobile && collapsed} />
 
-        {/* Desktop toggle button */}
-        <button
-          onClick={onToggle}
-          className="sidebar-toggle-btn"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            padding: 16,
-            background: "transparent",
-            border: "none",
-            borderTop: "1px solid rgba(201,168,76,0.08)",
-            color: "#6a6258",
-            cursor: "pointer",
-            transition: "color 0.2s",
-          }}
-          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "#c9a84c"}
-          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = "#6a6258"}
-          aria-label={collapsed ? "Ouvrir la barre latérale" : "Fermer la barre latérale"}
-        >
-          {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
-        </button>
+        {/* Desktop toggle button — hidden on mobile */}
+        {!isMobile && (
+          <button
+            onClick={onToggle}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              padding: 16,
+              background: "transparent",
+              border: "none",
+              borderTop: "1px solid rgba(201,168,76,0.08)",
+              color: "#6a6258",
+              cursor: "pointer",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "#c9a84c"}
+            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = "#6a6258"}
+            aria-label={collapsed ? "Ouvrir la barre latérale" : "Fermer la barre latérale"}
+          >
+            {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+          </button>
+        )}
       </aside>
     </>
   )
