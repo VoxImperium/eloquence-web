@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
-import Nav from "./Nav"
 import Sidebar from "./Sidebar"
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -24,8 +23,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Nav onMobileMenuToggle={() => setMobileOpen(p => !p)} />
-
       <Sidebar
         collapsed={collapsed}
         onToggle={handleToggle}
