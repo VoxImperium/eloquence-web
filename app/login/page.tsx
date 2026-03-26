@@ -75,10 +75,7 @@ function LoginForm() {
   const q = QUOTES[Math.floor(Date.now() / 10000) % QUOTES.length]
 
   return (
-    <main style={{
-      minHeight:"100vh",
-      display:"grid", gridTemplateColumns:"1fr 1fr",
-    }}>
+    <main className="login-grid">
       {/* Côté gauche — formulaire */}
       <div style={{
         display:"flex", alignItems:"center", justifyContent:"center",
@@ -194,7 +191,7 @@ function LoginForm() {
       </div>
 
       {/* Côté droit — citation + ambiance */}
-      <div style={{
+      <div className="login-quote-panel" style={{
         display:"flex", flexDirection:"column",
         alignItems:"center", justifyContent:"center",
         padding:"80px 64px",
