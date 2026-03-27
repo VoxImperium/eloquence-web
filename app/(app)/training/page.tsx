@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
+import { isAdminEmail } from "@/lib/admin"
 import Link from "next/link"
 
 const CATS = ["Philosophie","Société & Politique","Technologie & IA","Environnement & Écologie","Éducation & Culture","Économie & Travail","Éthique & Bioéthique","Justice & Droit","Relations internationales","Identité & Société","Psychologie & Bien-être"]
@@ -22,6 +23,7 @@ export default function TrainingPage() {
   const [userId,    setUserId]    = useState<string|null>(null)
   const [plan,      setPlan]      = useState<string|null>(null)
   const [used,      setUsed]      = useState(0)
+  const [isAdmin,   setIsAdmin]   = useState(false)
   const mrRef = useRef<any>(null); const chunksRef = useRef<any[]>([]); const endRef = useRef<any>(null)
   const router   = useRouter()
   const supabase = createClient()
@@ -30,6 +32,7 @@ export default function TrainingPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/training"); return }
       setUserId(user.id)
+      setIsAdmin(isAdminEmail(user.email))
       fetchUsage("training").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
@@ -96,7 +99,7 @@ export default function TrainingPage() {
   const limits   = getPlanLimits(plan)
   const trLimit  = limits.training
   const quotaMax = trLimit === Infinity ? null : trLimit
-  const blocked  = quotaMax !== null && used >= quotaMax
+  const blocked  = !isAdmin && quotaMax !== null && used >= quotaMax
 
   if (step==="select") return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:880, margin:"0 auto"}}>

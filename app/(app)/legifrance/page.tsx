@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { getPlanLimits, fetchUsage, trackUsage, isFeatureBlocked } from "@/lib/plan-limits"
+import { isAdminEmail } from "@/lib/admin"
 import Link from "next/link"
 
 const DOMAINES = [
@@ -37,6 +38,7 @@ export default function LegifrangePage() {
   const [userId,      setUserId]      = useState<string|null>(null)
   const [plan,        setPlan]        = useState<string|null>(null)
   const [used,        setUsed]        = useState(0)
+  const [isAdmin,     setIsAdmin]     = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const router   = useRouter()
   const supabase = createClient()
@@ -45,6 +47,7 @@ export default function LegifrangePage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/legifrance"); return }
       setUserId(user.id)
+      setIsAdmin(isAdminEmail(user.email))
       fetchUsage("juridique").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
@@ -118,9 +121,9 @@ export default function LegifrangePage() {
 
   const limits   = getPlanLimits(plan)
   const jurLimit = limits.juridique
-  const planBlocked = isFeatureBlocked(plan, "juridique")
+  const planBlocked = isFeatureBlocked(plan, "juridique") && !isAdmin
   const quotaMax = jurLimit === Infinity ? null : jurLimit === 0 ? 0 : jurLimit
-  const quotaBlocked = !planBlocked && quotaMax !== null && used >= quotaMax
+  const quotaBlocked = !isAdmin && !planBlocked && quotaMax !== null && used >= quotaMax
 
   return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:960, margin:"0 auto"}}>

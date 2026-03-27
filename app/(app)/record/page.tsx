@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
+import { isAdminEmail } from "@/lib/admin"
 import Link from "next/link"
 
 const CONTEXTS = [
@@ -22,6 +23,7 @@ export default function RecordPage() {
   const [userId,   setUserId]   = useState<string|null>(null)
   const [plan,     setPlan]     = useState<string|null>(null)
   const [used,     setUsed]     = useState(0)
+  const [isAdmin,  setIsAdmin]  = useState(false)
 
   const mrRef      = useRef(null)
   const chunksRef  = useRef([])
@@ -34,6 +36,7 @@ export default function RecordPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/record"); return }
       setUserId(user.id)
+      setIsAdmin(isAdminEmail(user.email))
       fetchUsage("vocal").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
@@ -107,7 +110,7 @@ export default function RecordPage() {
   const limits   = getPlanLimits(plan)
   const limit    = limits.vocal
   const quotaMax = limit === Infinity ? null : limit
-  const blocked  = quotaMax !== null && used >= quotaMax
+  const blocked  = !isAdmin && quotaMax !== null && used >= quotaMax
 
   return (
     <main style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"80px 24px"}}>
