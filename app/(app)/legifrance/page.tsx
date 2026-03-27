@@ -119,6 +119,13 @@ export default function LegifrangePage() {
     })
   }
 
+  const renderWithKeywords = (text: string) => {
+    if (!text) return null
+    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const html = escaped.replace(/\*\*([^*]+)\*\*/g, '<span style="color:#c9a84c;font-weight:600">$1</span>')
+    return <span dangerouslySetInnerHTML={{__html: html}}/>
+  }
+
   const limits   = getPlanLimits(plan)
   const jurLimit = limits.juridique
   const planBlocked = isFeatureBlocked(plan, "juridique") && !isAdmin
@@ -369,7 +376,7 @@ export default function LegifrangePage() {
           {result.essence_du_drame && (
             <div style={{borderLeft:"2px solid #c9a84c",paddingLeft:24,marginBottom:24}}>
               <p style={{fontFamily:"'Raleway',sans-serif",fontSize:9,letterSpacing:"0.3em",textTransform:"uppercase",color:"#c9a84c",marginBottom:10}}>🏛️ L&apos;Essence du Drame</p>
-              <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontStyle:"italic",fontWeight:300,lineHeight:1.7,color:"#f5f0e8"}}>{result.essence_du_drame}</p>
+              <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontStyle:"italic",fontWeight:300,lineHeight:1.7,color:"#f5f0e8"}}>{renderWithKeywords(result.essence_du_drame)}</p>
             </div>
           )}
 
@@ -426,11 +433,11 @@ export default function LegifrangePage() {
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {(result.jurisprudence||[]).length > 0 ? (result.jurisprudence||[]).map((j: any,i: number) => (
                 <div key={i} style={{border:"1px solid rgba(201,168,76,0.12)",padding:"20px 24px"}}>
-                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:10}}>
-                    <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#f5f0e8"}}>Cass. {j.chambre} — {j.date}</p>
-                    <span style={{fontFamily:"'Raleway',sans-serif",fontSize:9,color:"#6a6258",letterSpacing:"0.1em"}}>n°{j.numero}</span>
-                  </div>
+                  <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#f5f0e8",marginBottom:8}}>
+                    {j.formatage_officiel || `Cass. ${j.chambre} — ${j.date}`}
+                  </p>
                   {j.solution&&<p style={{fontSize:11,color:"#c9a84c",marginBottom:8}}>{j.solution}</p>}
+                  {j.apport_cas_pratique&&<p style={{fontSize:13,color:"#d4cfc4",lineHeight:1.8,marginBottom:10,paddingBottom:10,borderBottom:"1px solid rgba(201,168,76,0.1)"}}>{j.apport_cas_pratique}</p>}
                   <p style={{fontSize:12,color:"#6a6258",lineHeight:1.8}}>{j.resume}</p>
                 </div>
               )) : (
