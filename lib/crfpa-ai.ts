@@ -14,7 +14,7 @@
 import type { QaExchange, CrfpaSubject } from "@/types/crfpa"
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-const GROQ_MODEL   = "llama3-70b-8192"
+const GROQ_MODEL   = "llama-3.3-70b-versatile"
 
 /** System prompt for the AI jury. */
 function buildJurySystemPrompt(subject: CrfpaSubject): string {
