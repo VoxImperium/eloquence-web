@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase"
 import type { CrfpaSubject, ScoreBreakdown, LegalReference } from "@/types/crfpa"
 
 // ── Phase definitions ────────────────────────────────────────────────────────
@@ -86,6 +87,16 @@ export default function GrandsConcoursPage() {
   const [exposeText, setExposeText] = useState("")
   const exposeTimer = useCountdown(900, phase === "expose")
 
+  // Phase 3 – Exposé audio mode
+  const [exposeMode, setExposeMode] = useState<"oral" | "written">("oral")
+  const [exposeRecStatus, setExposeRecStatus] = useState<"idle" | "recording" | "uploading" | "transcribing">("idle")
+  const [exposeAudioUrl, setExposeAudioUrl] = useState<string | null>(null)
+  const [exposeRecSeconds, setExposeRecSeconds] = useState(0)
+  const [exposeNotesOpen, setExposeNotesOpen] = useState(true)
+  const exposeMrRef = useRef<MediaRecorder | null>(null)
+  const exposeChunksRef = useRef<Blob[]>([])
+  const exposeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
   // Phase 4 – Q&A
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null)
   const [currentAnswer, setCurrentAnswer] = useState("")
@@ -120,6 +131,69 @@ export default function GrandsConcoursPage() {
     return res.json()
   }, [])
 
+  // ── Expose audio recording ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (exposeRecStatus === "recording") {
+      exposeTimerRef.current = setInterval(() => setExposeRecSeconds(s => s + 1), 1000)
+    } else {
+      if (exposeTimerRef.current) clearInterval(exposeTimerRef.current)
+      if (exposeRecStatus === "idle") setExposeRecSeconds(0)
+    }
+    return () => { if (exposeTimerRef.current) clearInterval(exposeTimerRef.current) }
+  }, [exposeRecStatus])
+
+  const startExposeRec = async () => {
+    setError(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      exposeChunksRef.current = []
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : MediaRecorder.isTypeSupported("audio/mp4")
+          ? "audio/mp4"
+          : undefined
+      const mrOptions: MediaRecorderOptions = { audioBitsPerSecond: 64000 }
+      if (mimeType) mrOptions.mimeType = mimeType
+      const mr = new MediaRecorder(stream, mrOptions)
+      mr.ondataavailable = (e) => { if (e.data.size > 0) exposeChunksRef.current.push(e.data) }
+      mr.onstop = handleExposeRecStop
+      mr.start(1000)
+      exposeMrRef.current = mr
+      setExposeRecStatus("recording")
+    } catch (err) {
+      console.error("[CRFPA/expose] Microphone access error:", err)
+      setError("Impossible d'accéder au microphone. Vérifiez vos autorisations.")
+    }
+  }
+
+  const stopExposeRec = () => {
+    exposeMrRef.current?.stop()
+    exposeMrRef.current?.stream.getTracks().forEach(t => t.stop())
+  }
+
+  const handleExposeRecStop = async () => {
+    setExposeRecStatus("uploading")
+    try {
+      const mimeType = exposeMrRef.current?.mimeType ?? "audio/webm"
+      const ext = mimeType.includes("mp4") ? "mp4" : "webm"
+      const blob = new Blob(exposeChunksRef.current, { type: mimeType })
+      const supabase = createClient()
+      const timestamp = Date.now()
+      if (!attemptId) throw new Error("Tentative non initialisée")
+      const filePath = `crfpa-expose/${attemptId}/${timestamp}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from("crfpa-audio")
+        .upload(filePath, blob, { contentType: mimeType, upsert: true })
+      if (uploadError) throw new Error(uploadError.message)
+      const { data: urlData } = supabase.storage.from("crfpa-audio").getPublicUrl(filePath)
+      setExposeAudioUrl(urlData.publicUrl)
+      setExposeRecStatus("idle")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erreur lors de l'upload audio.")
+      setExposeRecStatus("idle")
+    }
+  }
+
   // ── Phase 1: Generate subject ──────────────────────────────────────────────
   const generateSubject = async () => {
     setLoading(true)
@@ -136,6 +210,11 @@ export default function GrandsConcoursPage() {
 
       setPrepNotes("")
       setExposeText("")
+      setExposeAudioUrl(null)
+      setExposeRecStatus("idle")
+      setExposeRecSeconds(0)
+      setExposeMode("oral")
+      setExposeNotesOpen(true)
       setQaHistory([])
       setCurrentQuestion(null)
       setCurrentAnswer("")
@@ -179,14 +258,16 @@ export default function GrandsConcoursPage() {
 
   // ── Phase 3 → 4: Submit exposé ────────────────────────────────────────────
   const submitExpose = async () => {
-    if (!attemptId || !exposeText.trim()) return
+    if (!attemptId) return
+    if (exposeMode === "written" && !exposeText.trim()) return
+    if (exposeMode === "oral" && !exposeAudioUrl) return
     setLoading(true)
     setError(null)
     try {
-      await apiPost(`/api/crfpa/attempt/${attemptId}/expose`, {
-        expose_text: exposeText,
-        duration_seconds: exposeTimer.elapsed,
-      })
+      const exposePayload = exposeMode === "oral"
+        ? { expose_audio_url: exposeAudioUrl, duration_seconds: exposeTimer.elapsed }
+        : { expose_text: exposeText, duration_seconds: exposeTimer.elapsed }
+      await apiPost(`/api/crfpa/attempt/${attemptId}/expose`, exposePayload)
       // Get first jury question
       const qaData = await apiPost(`/api/crfpa/attempt/${attemptId}/qa`, { phase: "question" })
       if (qaData.end_of_interview) {
@@ -425,38 +506,211 @@ export default function GrandsConcoursPage() {
             expiredMessage="Temps d'exposé écoulé — soumettez votre présentation."
           />
 
-          <div style={{ ...cardStyle }}>
-            <label style={goldLabel}>Votre exposé</label>
-            <textarea
-              value={exposeText}
-              onChange={e => setExposeText(e.target.value)}
-              placeholder="Rédigez votre exposé de 15 minutes ici…"
-              style={{
-                width: "100%",
-                height: 280,
-                padding: "14px 18px",
-                background: "rgba(201,168,76,0.02)",
-                border: "1px solid rgba(201,168,76,0.12)",
-                color: "#f5f0e8",
-                fontFamily: "'Libre Baskerville',serif",
-                fontSize: 13,
-                lineHeight: 1.8,
-                resize: "vertical",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
+          {/* Prep notes collapsible panel */}
+          {prepNotes.trim() && (
+            <div style={{
+              border: "1px solid rgba(201,168,76,0.2)",
+              marginBottom: 20,
+              background: "rgba(201,168,76,0.02)",
+            }}>
+              <button
+                onClick={() => setExposeNotesOpen(o => !o)}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px 20px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#c9a84c",
+                  fontFamily: "'Raleway',sans-serif",
+                  fontSize: 10,
+                  letterSpacing: "0.25em",
+                  textTransform: "uppercase",
+                }}
+              >
+                <span>Vos notes de préparation</span>
+                <span style={{ fontSize: 14, lineHeight: 1 }}>{exposeNotesOpen ? "▲" : "▼"}</span>
+              </button>
+              {exposeNotesOpen && (
+                <div style={{ padding: "0 20px 16px" }}>
+                  <pre style={{
+                    fontFamily: "'Libre Baskerville',serif",
+                    fontSize: 13,
+                    lineHeight: 1.8,
+                    color: "#c8bfb0",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    margin: 0,
+                    borderTop: "1px solid rgba(201,168,76,0.1)",
+                    paddingTop: 14,
+                  }}>
+                    {prepNotes}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Mode toggle */}
+          <div style={{ display: "flex", gap: 0, marginBottom: 20, border: "1px solid rgba(201,168,76,0.2)", width: "fit-content" }}>
+            {(["oral", "written"] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => setExposeMode(m)}
+                style={{
+                  padding: "8px 20px",
+                  background: exposeMode === m ? "rgba(201,168,76,0.12)" : "none",
+                  border: "none",
+                  color: exposeMode === m ? "#c9a84c" : "#6a6258",
+                  fontFamily: "'Raleway',sans-serif",
+                  fontSize: 10,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  transition: "background 0.15s",
+                }}
+              >
+                {m === "oral" ? "🎙 Oral" : "✏ Écrit"}
+              </button>
+            ))}
           </div>
 
+          {/* Oral mode */}
+          {exposeMode === "oral" && (
+            <div style={{ ...cardStyle }}>
+              <label style={goldLabel}>Enregistrement oral</label>
+
+              {exposeRecStatus === "idle" && !exposeAudioUrl && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "24px 0" }}>
+                  <button
+                    onClick={startExposeRec}
+                    style={{
+                      width: 96,
+                      height: 96,
+                      borderRadius: "50%",
+                      border: "2px solid #c9a84c",
+                      background: "rgba(201,168,76,0.08)",
+                      color: "#c9a84c",
+                      fontSize: 32,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    aria-label="Démarrer l'enregistrement"
+                  >
+                    🎙
+                  </button>
+                  <span style={{ ...label10, marginBottom: 0 }}>Cliquez pour commencer l&apos;enregistrement</span>
+                </div>
+              )}
+
+              {exposeRecStatus === "recording" && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "24px 0" }}>
+                  <div style={{ position: "relative" }}>
+                    <button
+                      onClick={stopExposeRec}
+                      style={{
+                        width: 96,
+                        height: 96,
+                        borderRadius: "50%",
+                        border: "2px solid #c97a4c",
+                        background: "rgba(201,122,76,0.15)",
+                        color: "#c97a4c",
+                        fontSize: 28,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        outline: "4px solid rgba(201,122,76,0.25)",
+                        outlineOffset: 2,
+                      }}
+                      aria-label="Arrêter l'enregistrement"
+                    >
+                      ⏹
+                    </button>
+                  </div>
+                  <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 20, letterSpacing: "0.1em", color: "#c97a4c" }}>
+                    {String(Math.floor(exposeRecSeconds / 60)).padStart(2, "0")}:{String(exposeRecSeconds % 60).padStart(2, "0")}
+                  </span>
+                  <span style={{ ...label10, marginBottom: 0, color: "#c97a4c" }}>Enregistrement en cours — cliquez pour arrêter</span>
+                </div>
+              )}
+
+              {exposeRecStatus === "uploading" && (
+                <div style={{ textAlign: "center", padding: "24px 0", color: "#8a8070", fontFamily: "'Raleway',sans-serif", fontSize: 12, letterSpacing: "0.1em" }}>
+                  Envoi de l&apos;audio…
+                </div>
+              )}
+
+              {exposeRecStatus === "idle" && exposeAudioUrl && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontSize: 20 }}>✅</span>
+                    <span style={{ fontSize: 13, color: "#c8bfb0", fontFamily: "'Raleway',sans-serif" }}>
+                      Enregistrement prêt ({String(Math.floor(exposeRecSeconds / 60)).padStart(2, "0")}:{String(exposeRecSeconds % 60).padStart(2, "0")})
+                    </span>
+                    <button
+                      onClick={() => { setExposeAudioUrl(null); setExposeRecSeconds(0) }}
+                      style={{ background: "none", border: "none", color: "#6a6258", cursor: "pointer", fontSize: 12 }}
+                    >
+                      Recommencer
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Written mode */}
+          {exposeMode === "written" && (
+            <div style={{ ...cardStyle }}>
+              <label style={goldLabel}>Votre exposé</label>
+              <textarea
+                value={exposeText}
+                onChange={e => setExposeText(e.target.value)}
+                placeholder="Rédigez votre exposé de 15 minutes ici…"
+                style={{
+                  width: "100%",
+                  height: 280,
+                  padding: "14px 18px",
+                  background: "rgba(201,168,76,0.02)",
+                  border: "1px solid rgba(201,168,76,0.12)",
+                  color: "#f5f0e8",
+                  fontFamily: "'Libre Baskerville',serif",
+                  fontSize: 13,
+                  lineHeight: 1.8,
+                  resize: "vertical",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-            <button
-              onClick={submitExpose}
-              disabled={!exposeText.trim() || loading}
-              className="btn-gold"
-              style={{ opacity: (!exposeText.trim() || loading) ? 0.5 : 1, cursor: (!exposeText.trim() || loading) ? "not-allowed" : "pointer" }}
-            >
-              <span className="btn-text">{loading ? "Soumission…" : "Soumettre l'exposé →"}</span>
-            </button>
+            {(() => {
+              const isSubmitDisabled =
+                loading ||
+                exposeRecStatus !== "idle" ||
+                (exposeMode === "oral" && !exposeAudioUrl) ||
+                (exposeMode === "written" && !exposeText.trim())
+              return (
+                <button
+                  onClick={submitExpose}
+                  disabled={isSubmitDisabled}
+                  className="btn-gold"
+                  style={{ opacity: isSubmitDisabled ? 0.5 : 1, cursor: isSubmitDisabled ? "not-allowed" : "pointer" }}
+                >
+                  <span className="btn-text">
+                    {loading ? "Transcription en cours…" : "Soumettre l'exposé →"}
+                  </span>
+                </button>
+              )
+            })()}
             <button onClick={restart} className="btn-outline">
               <span>Abandonner</span>
             </button>
