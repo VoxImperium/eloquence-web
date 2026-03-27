@@ -53,7 +53,6 @@ export default function Nav() {
           ["/simulate",         "Joute verbale"],
           ["/training",         "Entraînement"],
           ["/speech-analysis",  "Discours"],
-          ["/grands-concours",  "Grands Concours"],
           ["/pricing",          "Tarifs"],
         ].map(([href, label]) => (
           <Link key={href} href={href} style={{

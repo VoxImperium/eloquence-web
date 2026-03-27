@@ -15,12 +15,6 @@ const PILLARS = [
     desc: "Résolvez vos cas pratiques. Légifrance × Thémis génère votre plaidoirie complète.",
     tag: "Nouveau"
   },
-  {
-    num: "VI",
-    title: "Grands Concours",
-    desc: "Simulation CRFPA & ENM : préparez-vous aux plus grands défis de l'éloquence juridique.",
-    tag: "Nouveau"
-  }
 ]
 
 const QUOTES = [
@@ -137,7 +131,7 @@ export default function HomePage() {
         <div className="rule-gold" style={{position:"absolute", bottom:0, left:0, right:0}}/>
       </section>
 
-      {/* SIX PILIERS */}
+      {/* CINQ PILIERS */}
       <section style={{maxWidth:1200, margin:"0 auto", padding:"100px 48px"}}>
         <div style={{textAlign:"center", marginBottom:72}}>
           <div className="eyebrow" style={{justifyContent:"center", marginBottom:20}}>
@@ -146,7 +140,7 @@ export default function HomePage() {
             <span style={{width:40, height:1, background:"linear-gradient(90deg,#c9a84c,transparent)", display:"block"}}/>
           </div>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(36px,4vw,56px)", fontWeight:300, lineHeight:1.15, marginBottom:16}}>
-            Six piliers de <em style={{color:"#c9a84c"}}>l&apos;excellence</em>
+            Cinq piliers de <em style={{color:"#c9a84c"}}>l&apos;excellence</em>
           </h2>
           <p style={{fontSize:14, color:"#6a6258", maxWidth:440, margin:"0 auto", lineHeight:1.9}}>
             Des outils forgés pour les orateurs d&apos;exception.
@@ -155,7 +149,7 @@ export default function HomePage() {
 
         <div className="pillars-grid" style={{border:"1px solid rgba(201,168,76,0.2)"}}>
           {PILLARS.map((p, i) => (
-            <a key={i} href={["/record","/simulate","/training","/speech-analysis","/legifrance","/grands-concours"][i]}
+            <a key={i} href={["/record","/simulate","/training","/speech-analysis","/legifrance"][i]}
               className="pillar-item"
               style={{
                 padding:"40px 28px",

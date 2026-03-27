@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase"
+import { isAdminEmail } from "@/lib/admin"
 import type { CrfpaSubject, ScoreBreakdown, LegalReference } from "@/types/crfpa"
 
 // ── Phase definitions ────────────────────────────────────────────────────────
@@ -69,6 +71,16 @@ const cardStyle: React.CSSProperties = {
 }
 
 export default function GrandsConcoursPage() {
+  // ── Admin gate ─────────────────────────────────────────────────────────────
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsAdmin(isAdminEmail(user?.email))
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Global state ───────────────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("start")
   const [loading, setLoading] = useState(false)
@@ -339,6 +351,33 @@ export default function GrandsConcoursPage() {
     setSubject(null)
     setAttemptId(null)
     setError(null)
+  }
+
+  // ── Admin gate render ─────────────────────────────────────────────────────
+  if (isAdmin === null) return (
+    <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 28, height: 28, border: "1px solid rgba(201,168,76,0.3)", borderTop: "1px solid #c9a84c", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </main>
+  )
+
+  if (!isAdmin) {
+    return (
+      <main style={{ padding: "40px 48px", maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ marginTop: 120 }}>
+          <p style={{ fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: "0.3em", textTransform: "uppercase", color: "#c9a84c", marginBottom: 20 }}>
+            Bientôt disponible
+          </p>
+          <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(32px,4vw,52px)", fontWeight: 300, marginBottom: 16, color: "#f5f0e8" }}>
+            Grands Concours
+          </h1>
+          <p style={{ fontSize: 14, color: "#6a6258", lineHeight: 1.9, maxWidth: 440, margin: "0 auto 40px" }}>
+            Cette fonctionnalité est en cours de préparation. Revenez bientôt pour découvrir les simulations CRFPA &amp; ENM.
+          </p>
+          <a href="/dashboard" className="btn-gold"><span className="btn-text">Retour au tableau de bord</span></a>
+        </div>
+      </main>
+    )
   }
 
   // ── Render ────────────────────────────────────────────────────────────────

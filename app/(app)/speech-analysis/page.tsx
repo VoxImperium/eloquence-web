@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
+import { isAdminEmail } from "@/lib/admin"
 import Link from "next/link"
 
 const CONTEXTS = [
@@ -34,6 +35,7 @@ export default function SpeechAnalysisPage() {
   const [userId,    setUserId]    = useState<string|null>(null)
   const [plan,      setPlan]      = useState<string|null>(null)
   const [used,      setUsed]      = useState(0)
+  const [isAdmin,   setIsAdmin]   = useState(false)
   const mrRef = useRef<any>(null)
   const chunksRef = useRef<any[]>([])
   const router   = useRouter()
@@ -43,6 +45,7 @@ export default function SpeechAnalysisPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push("/login?redirect=/speech-analysis"); return }
       setUserId(user.id)
+      setIsAdmin(isAdminEmail(user.email))
       fetchUsage("discourse").then(setUsed)
       supabase.from("profiles").select("plan").eq("id", user.id).single()
         .then(({ data }) => setPlan(data?.plan ?? null))
@@ -55,7 +58,7 @@ export default function SpeechAnalysisPage() {
   const limits   = getPlanLimits(plan)
   const disLimit = limits.discourse
   const quotaMax = disLimit === Infinity ? null : disLimit
-  const blocked  = quotaMax !== null && used >= quotaMax
+  const blocked  = !isAdmin && quotaMax !== null && used >= quotaMax
 
   const analyze = async () => {
     setLoading(true); setResult(null); setStep(0)
