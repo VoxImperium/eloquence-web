@@ -57,8 +57,25 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (insertError || !attempt) {
-    console.error("[CRFPA/attempt/start] Insert error:", insertError)
-    return NextResponse.json({ error: "Impossible de créer la tentative" }, { status: 500 })
+    console.error("[CRFPA/attempt/start] Insert error:", {
+      code:    insertError?.code,
+      message: insertError?.message,
+      details: insertError?.details,
+    })
+    const isDev = process.env.NODE_ENV === "development"
+    return NextResponse.json(
+      {
+        error:   "Impossible de créer la tentative",
+        ...(isDev && insertError && {
+          debug: {
+            code:    insertError.code,
+            message: insertError.message,
+            details: insertError.details,
+          },
+        }),
+      },
+      { status: 500 },
+    )
   }
 
   return NextResponse.json({
