@@ -8,6 +8,8 @@ import {
 } from "@/lib/crfpa-scoring"
 import { transcribeAudio } from "@/lib/groq-transcription"
 
+export const maxDuration = 120
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },

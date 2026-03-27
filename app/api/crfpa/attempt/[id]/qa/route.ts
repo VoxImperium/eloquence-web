@@ -116,7 +116,11 @@ export async function POST(
       }
     } catch (err) {
       console.error("[CRFPA/qa] AI generation error:", err)
-      return NextResponse.json({ error: "Erreur lors de la génération de la question" }, { status: 500 })
+      const isDev = process.env.NODE_ENV === "development"
+      return NextResponse.json({
+        error: "Erreur lors de la génération de la question",
+        ...(isDev && { debug: (err as Error).message }),
+      }, { status: 500 })
     }
 
     if (isEndOfInterview(juryOutput)) {
@@ -183,6 +187,7 @@ export async function POST(
       )
     } catch (err) {
       console.error("[CRFPA/qa/answer] Follow-up question error:", err)
+      const isDev = process.env.NODE_ENV === "development"
       // Save the answer even if AI fails
       await supabase
         .from("crfpa_attempts")
@@ -198,6 +203,7 @@ export async function POST(
         retranscription: answerRetranscription,
         next_question:   null,
         error_note:      "Réponse sauvegardée mais génération de question échouée",
+        ...(isDev && { debug: (err as Error).message }),
       })
     }
 
