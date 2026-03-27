@@ -119,6 +119,11 @@ export default function LegifrangePage() {
     })
   }
 
+  const cleanText = (text: string | undefined): string => {
+    if (!text) return ''
+    return text.replace(/\*{2,}/g, '').trim()
+  }
+
   const renderWithKeywords = (text: string) => {
     if (!text) return null
     const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -434,11 +439,15 @@ export default function LegifrangePage() {
               {(result.jurisprudence||[]).length > 0 ? (result.jurisprudence||[]).map((j: any,i: number) => (
                 <div key={i} style={{border:"1px solid rgba(201,168,76,0.12)",padding:"20px 24px"}}>
                   <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#f5f0e8",marginBottom:8}}>
-                    {j.formatage_officiel || `Cass. ${j.chambre} — ${j.date}`}
+                    {cleanText(j.formatage_officiel) || `Cass. ${j.chambre} — ${j.date}`}
                   </p>
-                  {j.solution&&<p style={{fontSize:11,color:"#c9a84c",marginBottom:8}}>{j.solution}</p>}
-                  {j.apport_cas_pratique&&<p style={{fontSize:13,color:"#d4cfc4",lineHeight:1.8,marginBottom:10,paddingBottom:10,borderBottom:"1px solid rgba(201,168,76,0.1)"}}>{j.apport_cas_pratique}</p>}
-                  <p style={{fontSize:12,color:"#6a6258",lineHeight:1.8}}>{j.resume}</p>
+                  {j.solution&&<p style={{fontSize:11,color:"#c9a84c",marginBottom:8}}>{cleanText(j.solution)}</p>}
+                  {j.apport_cas_pratique ? (
+                    <p style={{fontSize:13,color:"#d4cfc4",lineHeight:1.8,marginBottom:10,paddingBottom:10,borderBottom:"1px solid rgba(201,168,76,0.1)"}}>{cleanText(j.apport_cas_pratique)}</p>
+                  ) : (
+                    <p style={{fontSize:13,color:"#888",lineHeight:1.8,marginBottom:10,paddingBottom:10,borderBottom:"1px solid rgba(201,168,76,0.1)",fontStyle:"italic"}}>Analyse en cours&nbsp;…</p>
+                  )}
+                  <p style={{fontSize:12,color:"#6a6258",lineHeight:1.8}}>{cleanText(j.resume) || "Résumé indisponible"}</p>
                 </div>
               )) : (
                 <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontStyle:"italic",color:"#6a6258",textAlign:"center",padding:32}}>
