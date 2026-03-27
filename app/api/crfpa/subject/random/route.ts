@@ -16,11 +16,6 @@ export async function GET(_req: NextRequest) {
     }
   )
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-  }
-
   // Get total count for random offset calculation
   const { count, error: countError } = await supabase
     .from("crfpa_subjects")
