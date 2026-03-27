@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import jwt from "jsonwebtoken"
+import { generateConfirmToken } from "@/lib/jwt-confirm"
 
 async function getConfirmationLink(email: string, userId: string): Promise<string | null> {
   try {
-    const jwtSecret = process.env.JWT_SECRET
-    if (!jwtSecret) {
-      console.error("JWT_SECRET environment variable is not set")
-      return null
-    }
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.xn--loquence-90a.fr"
-    // Generate a JWT for email confirmation (valid 24h)
-    const token = jwt.sign(
-      { user_id: userId, email },
-      jwtSecret,
-      { expiresIn: "24h" }
-    )
-    return `${siteUrl}/api/auth/confirm-email?token=${token}`
+    // Generate a signed JWT for email confirmation (valid 24h)
+    const token = generateConfirmToken(userId, email)
+    return `${siteUrl}/auth/confirm?token=${token}`
   } catch (e) {
     console.warn("getConfirmationLink error:", e)
     return null
