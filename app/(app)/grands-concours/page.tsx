@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase"
 import type { CrfpaSubject, ScoreBreakdown, LegalReference } from "@/types/crfpa"
 
 // ── Phase definitions ────────────────────────────────────────────────────────
@@ -175,18 +174,15 @@ export default function GrandsConcoursPage() {
     setExposeRecStatus("uploading")
     try {
       const mimeType = exposeMrRef.current?.mimeType ?? "audio/webm"
-      const ext = mimeType.includes("mp4") ? "mp4" : "webm"
       const blob = new Blob(exposeChunksRef.current, { type: mimeType })
-      const supabase = createClient()
-      const timestamp = Date.now()
       if (!attemptId) throw new Error("Tentative non initialisée")
-      const filePath = `crfpa-expose/${attemptId}/${timestamp}.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from("crfpa-audio")
-        .upload(filePath, blob, { contentType: mimeType, upsert: true })
-      if (uploadError) throw new Error(uploadError.message)
-      const { data: urlData } = supabase.storage.from("crfpa-audio").getPublicUrl(filePath)
-      setExposeAudioUrl(urlData.publicUrl)
+      const formData = new FormData()
+      formData.append("file", blob, `expose.${mimeType.includes("mp4") ? "mp4" : "webm"}`)
+      formData.append("attemptId", attemptId)
+      const res = await fetch("/api/crfpa/upload-audio", { method: "POST", body: formData })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? "Erreur lors de l'upload audio.")
+      setExposeAudioUrl(json.publicUrl)
       setExposeRecStatus("idle")
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erreur lors de l'upload audio.")
@@ -375,8 +371,24 @@ export default function GrandsConcoursPage() {
           lineHeight: 1.1,
           marginTop: 8,
           marginBottom: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
         }}>
           Grand Oral <em style={{ color: "#c9a84c" }}>CRFPA</em>
+          <span style={{
+            fontFamily: "'Raleway',sans-serif",
+            fontSize: 9,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: "#c9a84c",
+            background: "rgba(201,168,76,0.15)",
+            border: "1px solid rgba(201,168,76,0.3)",
+            padding: "4px 10px",
+            fontStyle: "normal",
+          }}>
+            BÊTA
+          </span>
         </h1>
         <p style={{ fontSize: 13, color: "#6a6258", lineHeight: 1.9, maxWidth: 560 }}>
           Simulation complète du Grand Oral du barreau — Exposé 15&nbsp;min · Entretien jury 30&nbsp;min · Note /20.
@@ -384,6 +396,26 @@ export default function GrandsConcoursPage() {
       </div>
 
       {/* Phase indicator */}
+      <div style={{
+        border: "1px solid rgba(201,168,76,0.2)",
+        background: "rgba(201,168,76,0.04)",
+        padding: "12px 20px",
+        marginBottom: 24,
+        display: "flex",
+        gap: 10,
+        alignItems: "flex-start",
+      }}>
+        <span style={{ fontSize: 14, flexShrink: 0 }}>ℹ️</span>
+        <p style={{
+          fontFamily: "'Raleway',sans-serif",
+          fontSize: 11,
+          color: "#8a8070",
+          lineHeight: 1.7,
+          margin: 0,
+        }}>
+          Cette fonctionnalité est en phase de test. Certaines interactions avec le jury peuvent être imprécises. Vos retours nous aident à améliorer l&apos;expérience.
+        </p>
+      </div>
       <PhaseIndicator phase={phase} />
 
       {/* Error banner */}
