@@ -136,7 +136,6 @@ export default function GrandsConcoursPage() {
 
       setPrepNotes("")
       setExposeText("")
-      setExposeRetranscription(null)
       setQaHistory([])
       setCurrentQuestion(null)
       setCurrentAnswer("")
