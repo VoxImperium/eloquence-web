@@ -8,19 +8,21 @@ export async function GET(request: NextRequest) {
     const token = searchParams.get("token")
 
     if (!token) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_SITE_URL}/login?error=no-token`
+      return NextResponse.json(
+        { success: false, error: "Token de confirmation manquant" },
+        { status: 400 }
       )
     }
 
-    // Verify the JWT
+    // Verify JWT signature and expiration
     let decoded: { user_id?: string; email?: string }
     try {
       decoded = verifyConfirmToken(token)
     } catch (error) {
       console.error("JWT verification error:", error)
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_SITE_URL}/login?error=invalid-token`
+      return NextResponse.json(
+        { success: false, error: "Lien de confirmation invalide ou expiré" },
+        { status: 400 }
       )
     }
 
@@ -28,12 +30,13 @@ export async function GET(request: NextRequest) {
     const userEmail = decoded.email
 
     if (!userId || !userEmail) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_SITE_URL}/login?error=invalid-token`
+      return NextResponse.json(
+        { success: false, error: "Token invalide : données manquantes" },
+        { status: 400 }
       )
     }
 
-    // Use admin SDK to mark email as confirmed
+    // Use admin SDK to mark email as confirmed in Supabase
     const supabaseAdmin = createServiceClient()
     const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
       email_confirm: true,
@@ -41,19 +44,18 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("Email confirmation error:", error)
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_SITE_URL}/login?error=confirmation-failed`
+      return NextResponse.json(
+        { success: false, error: "Erreur lors de la confirmation de l'email" },
+        { status: 500 }
       )
     }
 
-    // ✅ Email confirmé avec succès
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/login?confirmed=true&email=${encodeURIComponent(userEmail)}`
-    )
+    return NextResponse.json({ success: true, email: userEmail })
   } catch (error) {
-    console.error("Confirm email error:", error)
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/login?error=confirmation-error`
+    console.error("Confirm endpoint error:", error)
+    return NextResponse.json(
+      { success: false, error: "Erreur serveur" },
+      { status: 500 }
     )
   }
 }
