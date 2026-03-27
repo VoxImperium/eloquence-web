@@ -190,7 +190,7 @@ export default function GrandsConcoursPage() {
       if (!attemptId) throw new Error("Tentative non initialisée")
       const formData = new FormData()
       formData.append("file", blob, `expose.${mimeType.includes("mp4") ? "mp4" : "webm"}`)
-      formData.append("attemptId", attemptId)
+      formData.append("attemptId", String(attemptId))
       const res = await fetch("/api/crfpa/upload-audio", { method: "POST", body: formData })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? "Erreur lors de l'upload audio.")
