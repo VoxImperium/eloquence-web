@@ -502,14 +502,14 @@ export default function LegifrangePage() {
           <div style={{marginTop:32}}>
             <button
               onClick={handleExportPdf}
-              disabled={pdfLoading || plan !== "illimite"}
+              disabled={pdfLoading || (plan !== "illimite" && !isAdmin)}
               className="btn-gold"
-              title={plan !== "illimite" ? "Export PDF disponible avec le plan Illimité" : undefined}
-              style={{width:"100%",justifyContent:"center",opacity:plan !== "illimite" ? 0.5 : 1,cursor:plan !== "illimite" ? "not-allowed" : "pointer"}}
+              title={plan !== "illimite" && !isAdmin ? "Export PDF disponible avec le plan Illimité" : undefined}
+              style={{width:"100%",justifyContent:"center",opacity:plan !== "illimite" && !isAdmin ? 0.5 : 1,cursor:plan !== "illimite" && !isAdmin ? "not-allowed" : "pointer"}}
             >
               {pdfLoading
                 ? <><span className="spinner-gold"/><span className="btn-text">Génération du PDF…</span></>
-                : <span className="btn-text">Télécharger l&apos;analyse en PDF 📥{plan !== "illimite" && " 🔒"}</span>
+                : <span className="btn-text">Télécharger l&apos;analyse en PDF 📥{plan !== "illimite" && !isAdmin && " 🔒"}</span>
               }
             </button>
           </div>
