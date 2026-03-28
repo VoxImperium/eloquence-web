@@ -103,6 +103,43 @@ export default function LegifrangePage() {
     clearInterval(iv); setLoading(false)
   }
 
+  const handleExportPdf = async () => {
+    if (!result) return
+    setPdfLoading(true)
+    try {
+      const res = await fetch("/api/backend/legifrance/export/analyse-pdf", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          qualification:    result.qualification,
+          essence_du_drame: result.essence_du_drame,
+          tirade_oratoire:  result.analyse_juridique?.tirade_oratoire ?? result.tirade_oratoire,
+          strategie:        result.analyse_juridique?.strategie ?? result.strategie,
+          articles_cites:   result.articles_cites,
+          jurisprudence:    result.jurisprudence,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.detail || "Erreur lors de la génération du PDF")
+        return
+      }
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement("a")
+      a.href     = url
+      a.download = "analyse-juridique.pdf"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      alert("Erreur lors du téléchargement du PDF")
+    } finally {
+      setPdfLoading(false)
+    }
+  }
+
   const formatTirade = (text: string) => {
     if (!text) return null
     return text.split("\n\n").map((para, i) => {
@@ -447,7 +484,10 @@ export default function LegifrangePage() {
                   ) : (
                     <p style={{fontSize:13,color:"#888",lineHeight:1.8,marginBottom:10,paddingBottom:10,borderBottom:"1px solid rgba(201,168,76,0.1)",fontStyle:"italic"}}>Analyse en cours&nbsp;…</p>
                   )}
-                  <p style={{fontSize:12,color:"#6a6258",lineHeight:1.8}}>{cleanText(j.resume) || "Résumé indisponible"}</p>
+                  {j.resume_styled
+                    ? <div style={{fontSize:12,color:"#6a6258",lineHeight:1.8}} dangerouslySetInnerHTML={{__html: j.resume_styled}}/>
+                    : <p style={{fontSize:12,color:"#6a6258",lineHeight:1.8}}>{cleanText(j.resume) || "Résumé indisponible"}</p>
+                  }
                 </div>
               )) : (
                 <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontStyle:"italic",color:"#6a6258",textAlign:"center",padding:32}}>
@@ -457,6 +497,22 @@ export default function LegifrangePage() {
               )}
             </div>
           )}
+
+          {/* Export PDF */}
+          <div style={{marginTop:32}}>
+            <button
+              onClick={handleExportPdf}
+              disabled={pdfLoading || plan !== "illimite"}
+              className="btn-gold"
+              title={plan !== "illimite" ? "Export PDF disponible avec le plan Illimité" : undefined}
+              style={{width:"100%",justifyContent:"center",opacity:plan !== "illimite" ? 0.5 : 1,cursor:plan !== "illimite" ? "not-allowed" : "pointer"}}
+            >
+              {pdfLoading
+                ? <><span className="spinner-gold"/><span className="btn-text">Génération du PDF…</span></>
+                : <span className="btn-text">Télécharger l&apos;analyse en PDF 📥{plan !== "illimite" && " 🔒"}</span>
+              }
+            </button>
+          </div>
         </div>
       )}
 
