@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
-import { isAdminEmail } from "@/lib/admin"
+import { isAdminEmail, hasUnlimitedAccess } from "@/lib/admin"
 import Link from "next/link"
 
 const CONTEXTS = [
@@ -24,6 +24,7 @@ export default function RecordPage() {
   const [plan,     setPlan]     = useState<string|null>(null)
   const [used,     setUsed]     = useState(0)
   const [isAdmin,  setIsAdmin]  = useState(false)
+  const [isBetaTester, setIsBetaTester] = useState(false)
 
   const mrRef      = useRef(null)
   const chunksRef  = useRef([])
@@ -38,8 +39,8 @@ export default function RecordPage() {
       setUserId(user.id)
       setIsAdmin(isAdminEmail(user.email))
       fetchUsage("vocal").then(setUsed)
-      supabase.from("profiles").select("plan").eq("id", user.id).single()
-        .then(({ data }) => setPlan(data?.plan ?? null))
+      supabase.from("profiles").select("plan, is_beta_tester").eq("id", user.id).single()
+        .then(({ data }) => { setPlan(data?.plan ?? null); setIsBetaTester(data?.is_beta_tester ?? false) })
     })
   }, [])
 
@@ -110,7 +111,7 @@ export default function RecordPage() {
   const limits   = getPlanLimits(plan)
   const limit    = limits.vocal
   const quotaMax = limit === Infinity ? null : limit
-  const blocked  = !isAdmin && quotaMax !== null && used >= quotaMax
+  const blocked  = !hasUnlimitedAccess(isAdmin, isBetaTester) && quotaMax !== null && used >= quotaMax
 
   return (
     <main style={{minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"80px 24px"}}>
