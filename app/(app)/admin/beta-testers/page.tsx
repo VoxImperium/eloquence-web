@@ -7,7 +7,7 @@ import Link from "next/link"
 
 interface UserProfile {
   id: string
-  first_name: string | null
+  email: string | null
   is_beta_tester: boolean
 }
 
@@ -90,8 +90,8 @@ export default function BetaTestersPage() {
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_beta_tester: !u.is_beta_tester } : u))
       showToast(
         user.is_beta_tester
-          ? `${user.first_name || "Utilisateur"} retiré des béta testeurs`
-          : `${user.first_name || "Utilisateur"} ajouté aux béta testeurs`,
+          ? `${user.email || "Utilisateur"} retiré des béta testeurs`
+          : `${user.email || "Utilisateur"} ajouté aux béta testeurs`,
         true
       )
     } catch {
@@ -143,7 +143,7 @@ export default function BetaTestersPage() {
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Rechercher par nom..."
+          placeholder="Rechercher par email..."
           className="input-box"
           style={{ flex: 1 }}
         />
@@ -178,7 +178,7 @@ export default function BetaTestersPage() {
             borderBottom: "1px solid rgba(201,168,76,0.15)",
             background: "rgba(201,168,76,0.03)",
           }}>
-            <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#6a6258" }}>Nom</span>
+            <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#6a6258" }}>Email</span>
             <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#6a6258", textAlign: "center", minWidth: 100 }}>Statut</span>
             <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#6a6258", textAlign: "right", minWidth: 120 }}>Action</span>
           </div>
@@ -196,7 +196,7 @@ export default function BetaTestersPage() {
             >
               <div>
                 <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, color: "#f5f0e8", marginBottom: 2 }}>
-                  {user.first_name || <span style={{ color: "#3a3830" }}>— sans nom —</span>}
+                  {user.email || <span style={{ color: "#3a3830" }}>— sans email —</span>}
                 </p>
                 <p style={{ fontSize: 10, letterSpacing: "0.05em", color: "#3a3830", fontFamily: "monospace" }}>
                   {user.id}
