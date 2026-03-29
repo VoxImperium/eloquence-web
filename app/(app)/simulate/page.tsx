@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { getPlanLimits, fetchUsage, trackUsage } from "@/lib/plan-limits"
-import { isAdminEmail } from "@/lib/admin"
+import { isAdminEmail, hasUnlimitedAccess } from "@/lib/admin"
 import Link from "next/link"
 
 const SCENARIOS = [
@@ -27,6 +27,7 @@ export default function SimulatePage() {
   const [plan,      setPlan]      = useState<string|null>(null)
   const [used,      setUsed]      = useState(0)
   const [isAdmin,   setIsAdmin]   = useState(false)
+  const [isBetaTester, setIsBetaTester] = useState(false)
 
   const mrRef     = useRef<any>(null)
   const chunksRef = useRef<any[]>([])
@@ -40,8 +41,8 @@ export default function SimulatePage() {
       setUserId(user.id)
       setIsAdmin(isAdminEmail(user.email))
       fetchUsage("simulations").then(setUsed)
-      supabase.from("profiles").select("plan").eq("id", user.id).single()
-        .then(({ data }) => setPlan(data?.plan ?? null))
+      supabase.from("profiles").select("plan, is_beta_tester").eq("id", user.id).single()
+        .then(({ data }) => { setPlan(data?.plan ?? null); setIsBetaTester(data?.is_beta_tester ?? false) })
     })
   }, [])
 
@@ -104,7 +105,7 @@ export default function SimulatePage() {
   const limits   = getPlanLimits(plan)
   const simLimit = limits.simulations
   const quotaMax = simLimit === Infinity ? null : simLimit
-  const blocked  = !isAdmin && quotaMax !== null && used >= quotaMax
+  const blocked  = !hasUnlimitedAccess(isAdmin, isBetaTester) && quotaMax !== null && used >= quotaMax
 
   // SÉLECTION
   if (step==="select") return (

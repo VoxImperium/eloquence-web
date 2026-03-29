@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { getPlanLimits, fetchUsage, trackUsage, isFeatureBlocked } from "@/lib/plan-limits"
-import { isAdminEmail } from "@/lib/admin"
+import { isAdminEmail, hasUnlimitedAccess } from "@/lib/admin"
 import Link from "next/link"
 
 const DOMAINES = [
@@ -39,6 +39,7 @@ export default function LegifrangePage() {
   const [plan,        setPlan]        = useState<string|null>(null)
   const [used,        setUsed]        = useState(0)
   const [isAdmin,     setIsAdmin]     = useState(false)
+  const [isBetaTester, setIsBetaTester] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const router   = useRouter()
   const supabase = createClient()
@@ -49,8 +50,8 @@ export default function LegifrangePage() {
       setUserId(user.id)
       setIsAdmin(isAdminEmail(user.email))
       fetchUsage("juridique").then(setUsed)
-      supabase.from("profiles").select("plan").eq("id", user.id).single()
-        .then(({ data }) => setPlan(data?.plan ?? null))
+      supabase.from("profiles").select("plan, is_beta_tester").eq("id", user.id).single()
+        .then(({ data }) => { setPlan(data?.plan ?? null); setIsBetaTester(data?.is_beta_tester ?? false) })
     })
   }, [])
 
@@ -170,9 +171,9 @@ export default function LegifrangePage() {
 
   const limits   = getPlanLimits(plan)
   const jurLimit = limits.juridique
-  const planBlocked = isFeatureBlocked(plan, "juridique") && !isAdmin
+  const planBlocked = isFeatureBlocked(plan, "juridique") && !hasUnlimitedAccess(isAdmin, isBetaTester)
   const quotaMax = jurLimit === Infinity ? null : jurLimit === 0 ? 0 : jurLimit
-  const quotaBlocked = !isAdmin && !planBlocked && quotaMax !== null && used >= quotaMax
+  const quotaBlocked = !hasUnlimitedAccess(isAdmin, isBetaTester) && !planBlocked && quotaMax !== null && used >= quotaMax
 
   return (
     <main style={{minHeight:"100vh", padding:"80px 48px", maxWidth:960, margin:"0 auto"}}>
@@ -502,14 +503,14 @@ export default function LegifrangePage() {
           <div style={{marginTop:32}}>
             <button
               onClick={handleExportPdf}
-              disabled={pdfLoading || (plan !== "illimite" && !isAdmin)}
+              disabled={pdfLoading || (plan !== "illimite" && !hasUnlimitedAccess(isAdmin, isBetaTester))}
               className="btn-gold"
-              title={plan !== "illimite" && !isAdmin ? "Export PDF disponible avec le plan Illimité" : undefined}
-              style={{width:"100%",justifyContent:"center",opacity:plan !== "illimite" && !isAdmin ? 0.5 : 1,cursor:plan !== "illimite" && !isAdmin ? "not-allowed" : "pointer"}}
+              title={plan !== "illimite" && !hasUnlimitedAccess(isAdmin, isBetaTester) ? "Export PDF disponible avec le plan Illimité" : undefined}
+              style={{width:"100%",justifyContent:"center",opacity:plan !== "illimite" && !hasUnlimitedAccess(isAdmin, isBetaTester) ? 0.5 : 1,cursor:plan !== "illimite" && !hasUnlimitedAccess(isAdmin, isBetaTester) ? "not-allowed" : "pointer"}}
             >
               {pdfLoading
                 ? <><span className="spinner-gold"/><span className="btn-text">Génération du PDF…</span></>
-                : <span className="btn-text">Télécharger l&apos;analyse en PDF 📥{plan !== "illimite" && !isAdmin && " 🔒"}</span>
+                : <span className="btn-text">Télécharger l&apos;analyse en PDF 📥{plan !== "illimite" && !hasUnlimitedAccess(isAdmin, isBetaTester) && " 🔒"}</span>
               }
             </button>
           </div>
