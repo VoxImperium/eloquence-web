@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { isAdminEmail } from "@/lib/admin"
@@ -30,14 +30,17 @@ export default function BetaTestersPage() {
   const router   = useRouter()
   const supabase = createClient()
   const LIMIT    = 20
+  const skipInitialSearchFetch = useRef(true)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user || !isAdminEmail(user.email)) {
         router.push("/dashboard")
+      } else {
+        fetchUsers(1, "")
       }
     })
-    // router and supabase are stable refs — intentionally omitted
+    // router, supabase and fetchUsers are stable refs — intentionally omitted
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -58,8 +61,12 @@ export default function BetaTestersPage() {
     }
   }, [])
 
-  // Debounce search: reset to page 1 and fetch when search changes
+  // Debounce search: reset to page 1 and fetch when search changes (skip initial mount)
   useEffect(() => {
+    if (skipInitialSearchFetch.current) {
+      skipInitialSearchFetch.current = false
+      return
+    }
     const t = setTimeout(() => {
       setPage(1)
       fetchUsers(1, search)
