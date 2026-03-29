@@ -17,10 +17,7 @@ export default function DashboardPage() {
   const [loading,     setLoading]     = useState(true)
   const [activeTab,   setActiveTab]   = useState<Tab>("overview")
 
-  // Account tab state
-  const [firstName,   setFirstName]   = useState("")
-  const [saveMsg,     setSaveMsg]     = useState<string|null>(null)
-  const [saveLoading, setSaveLoading] = useState(false)
+  // Account tab state — no editable fields remain after first_name removal
 
   // Security tab state
   const [newPassword, setNewPassword] = useState("")
@@ -56,7 +53,6 @@ export default function DashboardPage() {
       setUser(user)
       const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
       setProfile(profile)
-      setFirstName(profile?.first_name || "")
       const { data: sessions, error: sessionsError } = await supabase
         .from("analysis_sessions")
         .select("*")
@@ -95,18 +91,6 @@ export default function DashboardPage() {
 
   const logout = async () => { await supabase.auth.signOut(); router.push("/") }
 
-  const saveAccount = async () => {
-    if (!user) return
-    setSaveLoading(true)
-    setSaveMsg(null)
-    const { error } = await supabase
-      .from("profiles")
-      .update({ first_name: firstName })
-      .eq("id", user.id)
-    setSaveLoading(false)
-    setSaveMsg(error ? "Erreur lors de la sauvegarde." : "Modifications enregistrées.")
-    setTimeout(() => setSaveMsg(null), 3000)
-  }
 
   const changePassword = async () => {
     setPwdMsg(null)
@@ -231,12 +215,10 @@ export default function DashboardPage() {
   const histStart = histPage * PAGE_SIZE
   const histSlice = allSessions.slice(histStart, histStart + PAGE_SIZE)
 
-  const initials = ((profile?.first_name || user?.email || "U") as string)
-    .split(/[\s@]/)
+  const initials = ((user?.email || "U") as string)
+    .split("@")[0]
     .slice(0, 2)
-    .map((w: string) => w[0]?.toUpperCase() || "")
-    .join("")
-    .slice(0, 2) || "U"
+    .toUpperCase() || "U"
 
   const TABS: { id: Tab; label: string }[] = [
     { id: "overview", label: "Vue d'ensemble" },
@@ -253,7 +235,7 @@ export default function DashboardPage() {
         <div>
           <div className="eyebrow" style={{marginBottom:12}}>Espace personnel</div>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(28px,3.5vw,42px)", fontWeight:300, lineHeight:1.1}}>
-            {profile?.first_name ? `Bonjour, ${profile.first_name}` : user?.email}
+            {user?.email}
           </h1>
         </div>
         <div style={{display:"flex", alignItems:"center", gap:20}}>
@@ -481,7 +463,7 @@ export default function DashboardPage() {
               {initials}
             </div>
             <div>
-              <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:300, marginBottom:4}}>{profile?.first_name || user?.email}</p>
+              <p style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:300, marginBottom:4}}>{user?.email}</p>
               <p style={{fontSize:11, color:"#6a6258"}}>{user?.email}</p>
             </div>
           </div>
@@ -502,28 +484,6 @@ export default function DashboardPage() {
               }}>
                 {user?.email}
               </div>
-            </div>
-
-            <div>
-              <label style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.2em", textTransform:"uppercase" as const, color:"#6a6258", display:"block", marginBottom:8}}>
-                Prénom
-              </label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-                placeholder="Votre prénom"
-                style={{
-                  width:"100%", boxSizing:"border-box" as const,
-                  border:"1px solid rgba(201,168,76,0.25)",
-                  padding:"12px 16px",
-                  background:"transparent",
-                  color:"#f5f0e8",
-                  fontSize:13,
-                  outline:"none",
-                  fontFamily:"'Raleway',sans-serif",
-                }}
-              />
             </div>
 
             <div>
@@ -556,19 +516,6 @@ export default function DashboardPage() {
                   : "—"}
               </p>
             </div>
-          </div>
-
-          <div style={{marginTop:32, display:"flex", alignItems:"center", gap:16}}>
-            <button
-              onClick={saveAccount}
-              disabled={saveLoading}
-              className="btn-gold"
-            >
-              <span className="btn-text">{saveLoading ? "Enregistrement..." : "Enregistrer les modifications"}</span>
-            </button>
-            {saveMsg && (
-              <p style={{fontSize:12, color: saveMsg.includes("Erreur") ? "#c97a4c" : "#c9a84c"}}>{saveMsg}</p>
-            )}
           </div>
 
           {/* ─── Administration ─── */}

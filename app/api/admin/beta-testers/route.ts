@@ -39,12 +39,12 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from("profiles")
-    .select("id, first_name, is_beta_tester", { count: "exact" })
-    .order("first_name", { ascending: true })
+    .select("id, email, is_beta_tester", { count: "exact" })
+    .order("email", { ascending: true })
     .range(offset, offset + limit - 1)
 
   if (search) {
-    query = query.ilike("first_name", `%${search}%`)
+    query = query.ilike("email", `%${search}%`)
   }
 
   const { data, error, count } = await query
