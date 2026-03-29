@@ -50,7 +50,12 @@ export async function GET(req: NextRequest) {
   const { data, error, count } = await query
 
   if (error) {
-    console.error("Failed to fetch profiles:", error)
+    console.error("Failed to fetch profiles:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    })
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 

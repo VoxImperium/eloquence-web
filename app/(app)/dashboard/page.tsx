@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { getRank, getNextRank, getXPProgress, calculateXP, toRoman } from "@/lib/ranks"
+import { isAdminEmail } from "@/lib/admin"
 
 type Tab = "overview" | "account" | "security" | "history"
 
@@ -569,6 +570,36 @@ export default function DashboardPage() {
               <p style={{fontSize:12, color: saveMsg.includes("Erreur") ? "#c97a4c" : "#c9a84c"}}>{saveMsg}</p>
             )}
           </div>
+
+          {/* ─── Administration ─── */}
+          {isAdminEmail(user?.email) && (
+            <>
+              <div style={{height:1, background:"rgba(201,168,76,0.15)", marginTop:40, marginBottom:32}}/>
+              <p style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:"0.3em", textTransform:"uppercase" as const, color:"#6a6258", marginBottom:20}}>
+                Administration
+              </p>
+              <Link
+                href="/admin/beta-testers"
+                style={{
+                  display:"inline-block",
+                  border:"1px solid rgba(201,168,76,0.4)",
+                  color:"#c9a84c",
+                  padding:"10px 20px",
+                  fontFamily:"'Raleway',sans-serif",
+                  fontSize:10,
+                  letterSpacing:"0.2em",
+                  textTransform:"uppercase" as const,
+                  textDecoration:"none",
+                  transition:"all 0.3s",
+                  background:"transparent",
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(201,168,76,0.08)" }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent" }}
+              >
+                🛡️ Gérer les béta testeurs
+              </Link>
+            </>
+          )}
 
           {/* ─── Abonnement ─── */}
           {(profile?.plan === "basique" || profile?.plan === "illimite") && (
