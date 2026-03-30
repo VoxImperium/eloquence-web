@@ -10,6 +10,7 @@ import {
   BookOpen,
   BarChart2,
   Scale,
+  MessageSquare,
 } from "lucide-react"
 import SidebarNav, { NavItem } from "./SidebarNav"
 
@@ -20,6 +21,7 @@ const navItems: NavItem[] = [
   { href: "/training",        label: "Entraînement",     icon: BookOpen        },
   { href: "/speech-analysis", label: "Discours",         icon: BarChart2       },
   { href: "/legifrance",      label: "Légifrance",       icon: Scale           },
+  { href: "/chat",            label: "Chat Juridique",   icon: MessageSquare   },
 ]
 
 interface SidebarProps {
