@@ -1,12 +1,10 @@
 import type { Message, ChatResponse } from "@/types/chat"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-
 export async function sendChatMessage(
   messages: Message[],
   domaine: string
 ): Promise<ChatResponse> {
-  const res = await fetch(`${API_BASE}/chat/juridique`, {
+  const res = await fetch("/api/backend/chat/juridique", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ messages, domaine }),
