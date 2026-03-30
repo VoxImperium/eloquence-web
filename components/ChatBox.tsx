@@ -59,7 +59,7 @@ export default function ChatBox() {
       const assistantMsg: MessageWithSources = {
         id: nextId(),
         role: "assistant",
-        content: data.response,
+        content: data.response || '',
         sources: data.sources,
         timestamp: new Date(),
       }

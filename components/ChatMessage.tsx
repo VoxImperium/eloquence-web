@@ -7,7 +7,8 @@ interface ChatMessageProps {
 }
 
 /** Render basic markdown: **bold**, *italic*, newlines → <br> */
-function renderMarkdown(text: string) {
+function renderMarkdown(text: string | undefined | null) {
+  if (!text) return null
   const lines = text.split("\n")
   return lines.map((line, li) => {
     const parts: React.ReactNode[] = []
@@ -89,7 +90,7 @@ export default function ChatMessage({ message, sources }: ChatMessageProps) {
           fontWeight: 300,
         }}>
           {isUser
-            ? message.content
+            ? message.content || ''
             : renderMarkdown(message.content)
           }
         </div>
